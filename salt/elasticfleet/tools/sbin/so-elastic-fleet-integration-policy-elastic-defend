@@ -14,7 +14,7 @@ do
   printf "\n\nInitial Endpoints Policy - Loading $INTEGRATION\n"
   elastic_fleet_integration_check "endpoints-initial" "$INTEGRATION"
   if [ -n "$INTEGRATION_ID" ]; then
-    if if [ "$1" = "--force" ]; then
+    if [ "$1" = "--force" ]; then
       printf "\n\nIntegration $NAME exists - Updating integration\n"
       elastic_fleet_integration_update "$INTEGRATION_ID" "@$INTEGRATION"
     else
