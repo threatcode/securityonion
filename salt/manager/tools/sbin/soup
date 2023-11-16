@@ -756,6 +756,7 @@ apply_hotfix() {
   elif [[ "$INSTALLEDVERSION" == "2.4.30" ]] ; then
     rm -f /opt/so/conf/elastic-fleet/integrations/endpoints-initial/elastic-defend-endpoints.json
     so-kibana-restart --force
+    so-kibana-api-check
     . /usr/sbin/so-elastic-fleet-common
 
     elastic_fleet_integration_remove endpoints-initial elastic-defend-endpoints

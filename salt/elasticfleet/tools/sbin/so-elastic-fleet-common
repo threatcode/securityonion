@@ -56,9 +56,6 @@ elastic_fleet_integration_create() {
 
 elastic_fleet_integration_remove() {
 
-    #Check to make sure the Elastic Fleet API is up
-    elastic_fleet_api_check
-
     AGENT_POLICY=$1
 
     NAME=$2
