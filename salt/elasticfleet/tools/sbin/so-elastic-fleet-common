@@ -23,6 +23,17 @@ fi
 # Define a banner to separate sections
 banner="========================================================================="
 
+elastic_fleet_api_check() {
+    echo "Checking to make sure that Kibana API is up & ready..."
+    RETURN_CODE=0
+    wait_for_web_response "http://localhost:5601/api/fleet/settings" "fleet" 300 "curl -K /opt/so/conf/elasticsearch/curl.config"
+    RETURN_CODE=$?
+    if [[ "$RETURN_CODE" != "0" ]]; then
+        echo "Kibana API not accessible, exiting script..."
+        exit 1
+    fi
+}
+
 elastic_fleet_integration_check() {
 
     AGENT_POLICY=$1
@@ -44,6 +55,9 @@ elastic_fleet_integration_create() {
 
 
 elastic_fleet_integration_remove() {
+
+    #Check to make sure the Elastic Fleet API is up
+    elastic_fleet_api_check
 
     AGENT_POLICY=$1
 
