@@ -1,0 +1,116 @@
+#!/bin/bash
+
+# Copyright Security Onion Solutions LLC and/or licensed to Security Onion Solutions LLC under one
+# or more contributor license agreements. Licensed under the Elastic License 2.0 as shown at 
+# https://securityonion.net/license; you may not use this file except in compliance with the
+# Elastic License 2.0.
+
+stig_conf=/opt/so/conf/stig
+stig_log=/opt/so/log/stig
+date=$(date +%Y%m%d-%H%M%S)
+
+. /usr/sbin/so-common
+
+log() {
+	msg=$1
+	level=${2:-I}
+	now=$(TZ=GMT date +"%Y-%m-%dT%H:%M:%SZ")
+	echo -e "$now | $level | $msg" >> "$stig_log/stig-$date.log" 2>&1
+}
+
+info() {
+	log "$1" "INFO"
+}
+
+title() {
+	echo -e "\n-----------------------------\n $1\n-----------------------------\n" >> "$stig_log/stig-$date.log" 2>&1
+}
+
+logCmd() {
+	cmd=$1
+	info "Executing command: $cmd"
+	$cmd >> $stig_log/stig-$date.log 2>&1
+}
+
+apply_cat1(){
+    title "Running a oscap eval before modifying system"
+    logCmd "oscap xccdf eval --profile xccdf_org.ssgproject.content_profile_stig --results $stig_log/pre-oscap-results.xml --report $stig_log/pre-oscap-report.html /usr/share/xml/scap/ssg/content/ssg-ol9-ds.xml"
+    title "Applying CAT1 STIGs not applied by OSCAP"
+    title "Setting Ctrl-Alt-Del action to none"
+    info "per OSCAP rule id: xccdf_org.ssgproject.content_rule_disable_ctrlaltdel_burstaction"
+    if ! grep -q "^CtrlAltDelBurstAction=none$" /etc/systemd/system.conf; then
+        sed -i 's/#CtrlAltDelBurstAction=reboot-force/CtrlAltDelBurstAction=none/g' /etc/systemd/system.conf
+        logCmd "grep CtrlAltDelBurstAction /etc/systemd/system.conf"
+    fi
+
+    title "Setting ctrl-alt-del.target to masked or /dev/null"
+    info "per OSCAP rule id: xccdf_org.ssgproject.content_rule_disable_ctrlaltdel_reboot"
+    if systemctl is-enabled ctrl-alt-del.target | grep -q masked; then
+        info "ctrl-alt-del.target is already masked"
+    else
+        info "Redirecting ctrl-alt-del.target symlink to /dev/null"
+        logCmd "ln -sf /dev/null /etc/systemd/system/ctrl-alt-del.target"
+    fi
+
+    title "Remove nullok from password-auth & system-auth"
+    info "per OSCAP rule id: xccdf_org.ssgproject.content_rule_no_empty_passwords"
+    sed -i 's/ nullok//g' /etc/pam.d/password-auth
+    sed -i 's/ nullok//g' /etc/pam.d/system-auth
+
+    title "Setting PermitEmptyPasswords no in /etc/ssh/sshd_config"
+    info "per OSCAP rule id: xccdf_org.ssgproject.content_rule_sshd_disable_empty_passwords"
+    if grep -q "^#PermitEmptyPasswords no$" /etc/ssh/sshd_config; then
+        sed -i 's/#PermitEmptyPasswords no/PermitEmptyPasswords no/g' /etc/ssh/sshd_config
+        logCmd "grep PermitEmptyPasswords /etc/ssh/sshd_config"
+    else
+        logCmd "echo 'PermitEmptyPasswords no' >> /etc/ssh/sshd_config"
+    fi
+
+    title "Setting PermitUserEnvironment no in /etc/ssh/sshd_config"
+    info "per STIG rule id: SV-248650r877377"
+    if grep -q "^#PermitUserEnvironment no$" /etc/ssh/sshd_config; then
+        sed -i 's/#PermitUserEnvironment no/PermitUserEnvironment no/g' /etc/ssh/sshd_config
+        logCmd "grep PermitUserEnvironment /etc/ssh/sshd_config"
+    else
+        logCmd "echo 'PermitUserEnvironment no' >> /etc/ssh/sshd_config"
+    fi
+
+    title "Setting localpkg_gpgcheck=1"
+    info "per OSCAP rule id: xccdf_org.ssgproject.content_rule_ensure_gpgcheck_local_packages"
+    if [ ! -f /opt/so/saltstack/local/salt/repo/client/files/oracle/yum.conf.jinja ]; then
+        logCmd "cp /opt/so/saltstack/default/salt/repo/client/files/oracle/yum.conf.jinja /opt/so/saltstack/local/salt/repo/client/files/oracle/yum.conf.jinja"
+    fi
+    if ! grep -q "^localpkg_gpgcheck=1$" /opt/so/saltstack/local/salt/repo/client/files/oracle/yum.conf.jinja; then
+        echo 'localpkg_gpgcheck=1' >> /opt/so/saltstack/local/salt/repo/client/files/oracle/yum.conf.jinja
+        logCmd "grep localpkg_gpgcheck /opt/so/saltstack/local/salt/repo/client/files/oracle/yum.conf.jinja"
+    fi
+}
+
+apply_cat2(){
+    title "Applying CAT2 STIGs not applied by OSCAP"
+
+    title "Running custom OSCAP profile to remediate both CAT1 & CAT2 STIGs"
+    logCmd "oscap xccdf eval --remediate --profile xccdf_org.ssgproject.content_profile_stig --results $stig_log/results.xml $stig_conf/sos-oscap.xml"
+
+    title "Running OSCAP scan to verify application of STIGs"
+    info "The profile used to verify application of STIGs includes ALL CAT1 / CAT2 / CAT3 STIGs. It is expected that this report has CAT1s & some CAT2s as passing."
+
+    info "You can review the report post-oscap-report.html in a web browser."
+    logCmd "oscap xccdf eval --profile xccdf_org.ssgproject.content_profile_stig --results $stig_log/post-oscap-results.xml --report $stig_log/post-oscap-report.html /usr/share/xml/scap/ssg/content/ssg-ol9-ds.xml"
+}
+
+# if is_feature_enabled "stig"; then
+#     title "STIG feature is enabled"
+#     title "Applying STIGs"
+#     apply_cat1
+#     apply_cat2
+#     title "STIGs applied"
+# else
+#     echo "The application of STIGs is a feature of Security Onion supported only for customers with a valid license. Contact Security Onion Solutions, LLC via our website at https://securityonionsolutions.com for more information about purchasing a license to enable this feature."
+# fi
+
+title "EXPERIMENTAL: Applying STIGs!"
+info "A Security Onion Pro license is required for this feature."
+apply_cat1
+apply_cat2
+title "STIGs applied"
