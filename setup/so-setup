@@ -787,7 +787,7 @@ if ! [[ -f $install_opt_file ]]; then
 		#  run until a license is applied + stigs is set to true in soc config
 		if [[ "$test_profile" =~ "-stigs" ]]; then
 			# Loop until the sos-oscap.xml file is manually SCP'd to the box for automated cypress testing
-			while [ -f /home/onion/SecurityOnion/salt/stig/files/sos-oscap.xml ]; do
+			while [ ! -f /home/onion/securityonion/salt/stig/files/sos-oscap.xml ]; do
 				info "Waiting for sos-oscap.xml to be SCP'd to the box for automated testing"
 				sleep 5
 			done
