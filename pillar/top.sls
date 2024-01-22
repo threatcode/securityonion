@@ -37,6 +37,8 @@ base:
     - manager.adv_manager
     - idstools.soc_idstools
     - idstools.adv_idstools
+    - sigconverter.soc_sigconverter
+    - sigconverter.adv_sigconverter
     - logstash.nodes
     - logstash.soc_logstash
     - logstash.adv_logstash
@@ -102,6 +104,8 @@ base:
     - manager.adv_manager
     - idstools.soc_idstools
     - idstools.adv_idstools
+    - sigconverter.soc_sigconverter
+    - sigconverter.adv_sigconverter
     - soc.soc_soc
     - soc.adv_soc
     - soc.license
@@ -145,6 +149,8 @@ base:
     - healthcheck.standalone
     - idstools.soc_idstools
     - idstools.adv_idstools
+    - sigconverter.soc_sigconverter
+    - sigconverter.adv_sigconverter
     - kratos.soc_kratos
     - kratos.adv_kratos
     - redis.soc_redis

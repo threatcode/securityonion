@@ -9,10 +9,7 @@
 {%   from 'docker/docker.map.jinja' import DOCKER %}
 {%   from 'sigconverter/map.jinja' import SIGCONVERTERMERGED %}
 
-include:
-  - ssl
 
-{%   if SERVICETOKEN != '' %}
 so-sigconverter:
   docker_container.running:
     - image: {{ GLOBALS.registry_host }}:5000/{{ GLOBALS.image_repo }}/so-sigconverter:{{ GLOBALS.so_version }}
@@ -49,7 +46,6 @@ so-sigconverter:
       - {{ XTRAENV }}
         {% endfor %}
       {% endif %}
-{%   endif %}
 
 delete_so-sigconverter_so-status.disabled:
   file.uncomment:

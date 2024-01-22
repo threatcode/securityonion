@@ -64,6 +64,7 @@ base:
     - telegraf
     - firewall
     - idstools
+    - sigconverter
     - suricata.manager
     - healthcheck
     - mysql
@@ -97,6 +98,7 @@ base:
     - telegraf
     - backup.config_backup
     - idstools
+    - sigconverter
     - suricata.manager
     - mysql
     - elasticsearch
@@ -128,6 +130,7 @@ base:
     - sensoroni
     - telegraf
     - idstools
+    - sigconverter
     - suricata.manager    
     - healthcheck
     - mysql
@@ -174,6 +177,7 @@ base:
     - telegraf
     - backup.config_backup
     - idstools
+    - sigconverter
     - suricata.manager
     - mysql
     - elasticsearch
@@ -223,6 +227,7 @@ base:
     - telegraf
     - firewall
     - idstools
+    - sigconverter
     - suricata.manager
     - pcap
     - elasticsearch
