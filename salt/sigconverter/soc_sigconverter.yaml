@@ -1,0 +1,5 @@
+sigconverter:
+  enabled:
+    description: You can enable or disable Sigconverter.
+    advanced: True
+    helpLink: elastic-fleet.html
