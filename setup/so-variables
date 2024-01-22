@@ -154,6 +154,12 @@ export manager_pillar_file
 adv_manager_pillar_file="$local_salt_dir/pillar/manager/adv_manager.sls"
 export adv_manager_pillar_file
 
+sigconverter_pillar_file="$local_salt_dir/pillar/sigconverter/soc_sigconverter.sls"
+export sigconverter_pillar_file
+
+adv_sigconverter_pillar_file="$local_salt_dir/pillar/sigconverter/adv_sigconverter.sls"
+export adv_sigconverter_pillar_file
+
 kibana_pillar_file="$local_salt_dir/pillar/kibana/soc_kibana.sls"
 export kibana_pillar_file
 
