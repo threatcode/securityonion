@@ -26,7 +26,12 @@ so-elasticsearch:
     - networks:
       - sobridge:
         - ipv4_address: {{ DOCKER.containers['so-elasticsearch'].ip }}
-    - extra_hosts:  {{ LOGSTASH_NODES }}
+    - extra_hosts:
+    {% for node in LOGSTASH_NODES %}
+    {%   for hostname, ip in node.items() %}
+      - {{hostname}}:{{ip}}
+    {%   endfor %}
+    {% endfor %}
     {% if DOCKER.containers['so-elasticsearch'].extra_hosts %}
       {% for XTRAHOST in DOCKER.containers['so-elasticsearch'].extra_hosts %}
       - {{ XTRAHOST }}
@@ -110,7 +115,7 @@ escomponenttemplates:
     - group: 939
     - clean: True
     - onchanges_in:
-      - cmd: so-elasticsearch-templates
+      - file: so-elasticsearch-templates-reload
       
 # Auto-generate templates from defaults file
 {%     for index, settings in ES_INDEX_SETTINGS.items() %}
@@ -123,7 +128,7 @@ es_index_template_{{index}}:
       TEMPLATE_CONFIG: {{ settings.index_template }}
     - template: jinja
     - onchanges_in:
-      - cmd: so-elasticsearch-templates
+      - file: so-elasticsearch-templates-reload
 {%       endif %}
 {%     endfor %}
 
@@ -142,7 +147,7 @@ es_template_{{TEMPLATE.split('.')[0] | replace("/","_") }}:
     - user: 930
     - group: 939
     - onchanges_in:
-      - cmd: so-elasticsearch-templates
+      - file: so-elasticsearch-templates-reload
 {%       endfor %}
 {%     endif %}
 
@@ -166,6 +171,10 @@ so-elasticsearch-ilm-policy-load:
       - file: so-elasticsearch-ilm-policy-load-script
     - onchanges:
       - file: so-elasticsearch-ilm-policy-load-script
+
+so-elasticsearch-templates-reload:
+  file.absent:
+    - name: /opt/so/state/estemplates.txt
 
 so-elasticsearch-templates:
   cmd.run:
@@ -191,6 +200,18 @@ so-elasticsearch-roles-load:
     - require:
       - docker_container: so-elasticsearch
       - file: elasticsearch_sbin_jinja
+{% if grains.role in ['so-eval', 'so-standalone', 'so-managersearch', 'so-heavynode', 'so-manager'] %}
+so-elasticsearch-indices-delete:
+  cron.present:
+    - name: /usr/sbin/so-elasticsearch-indices-delete > /opt/so/log/elasticsearch/cron-elasticsearch-indices-delete.log 2>&1
+    - identifier: so-elasticsearch-indices-delete
+    - user: root
+    - minute: '*/5'
+    - hour: '*'
+    - daymonth: '*'
+    - month: '*'
+    - dayweek: '*'
+{% endif %}
 {%   endif %}
 
 {% else %}
