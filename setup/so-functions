@@ -802,6 +802,7 @@ create_manager_pillars() {
 	influxdb_pillar
 	logrotate_pillar
 	patch_pillar
+	sigconverter_pillar
 	nginx_pillar
 	kibana_pillar
 }
@@ -1257,6 +1258,12 @@ nginx_pillar() {
 		"    throttle_login_burst: 9999"\
 		"    throttle_login_rate: 9999"\
 		"" > "$nginx_pillar_file"
+}
+
+sigconverter_pillar() {
+	title "Creating the Sigconverter pillar"
+	touch $adv_sigconverter_pillar_file
+	touch $sigconverter_pillar_file
 }
 
 soc_pillar() {
