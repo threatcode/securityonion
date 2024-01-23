@@ -1262,6 +1262,7 @@ nginx_pillar() {
 
 sigconverter_pillar() {
 	title "Creating the Sigconverter pillar"
+	logCmd "mkdir -p $local_salt_dir/pillar/sigconverter"
 	touch $adv_sigconverter_pillar_file
 	touch $sigconverter_pillar_file
 }
