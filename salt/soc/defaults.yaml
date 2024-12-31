@@ -1950,6 +1950,9 @@ soc:
             - name: PE
               description: PE (Portable Executable) files transferred via network traffic
               query: 'tags:pe | groupby file.machine | groupby -sankey file.machine file.os | groupby file.os | groupby -sankey file.os file.subsystem | groupby file.subsystem | groupby file.section_names | groupby file.is_exe | groupby file.is_64bit'
+            - name: QUIC
+              description: QUIC network metadata
+              query: 'tags:quic | groupby quic.server_name | groupby source.ip | groupby destination.ip | groupby -sankey source.ip quic.server_name | groupby destination.port | groupby -sankey source.ip quic.client_initial_dcid quic.client_scid destination_geo.organization_name | groupby quic.server_scid | groupby quic.version | groupby quic.client_protocol'
             - name: RADIUS
               description: RADIUS (Remote Authentication Dial-In User Service) network metadata
               query: 'tags:radius | groupby user.name | groupby -sankey user.name source.ip | groupby source.ip | groupby -sankey source.ip destination.ip | groupby destination.ip | groupby destination.port | groupby destination_geo.organization_name'
