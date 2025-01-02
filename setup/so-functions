@@ -962,7 +962,12 @@ docker_seed_update() {
 docker_seed_registry() {
 	local VERSION="$SOVERSION"
 
-	if ! [ -f /nsm/docker-registry/docker/registry.tar ]; then
+	if [ -f /nsm/docker-registry/docker/registry.tar ]; then
+		logCmd "tar xvf /nsm/docker-registry/docker/registry.tar -C /nsm/docker-registry/docker"
+		logCmd "rm /nsm/docker-registry/docker/registry.tar"
+	elif [ -d /nsm/docker-registry/docker/registry ] && [ -f /etc/SOCLOUD ]; then
+		echo "Using existing docker registry content for cloud install"
+	else
 		if [ "$install_type" == 'IMPORT' ]; then
 			container_list 'so-import'	
 		else
@@ -972,9 +977,6 @@ docker_seed_registry() {
 		docker_seed_update_percent=25
 
 		update_docker_containers 'netinstall' '' 'docker_seed_update' '/dev/stdout' 2>&1 | tee -a "$setup_log"
-	else
-		logCmd "tar xvf /nsm/docker-registry/docker/registry.tar -C /nsm/docker-registry/docker"
-		logCmd "rm /nsm/docker-registry/docker/registry.tar"
 	fi
 }
 

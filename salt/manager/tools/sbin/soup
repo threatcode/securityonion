@@ -404,7 +404,8 @@ preupgrade_changes() {
     [[ "$INSTALLEDVERSION" == 2.4.80 ]] && up_to_2.4.90
     [[ "$INSTALLEDVERSION" == 2.4.90 ]] && up_to_2.4.100
     [[ "$INSTALLEDVERSION" == 2.4.100 ]] && up_to_2.4.110
-    [[ "$INSTALLEDVERSION" == 2.4.110 ]] && up_to_2.4.120
+    [[ "$INSTALLEDVERSION" == 2.4.110 ]] && up_to_2.4.111
+    [[ "$INSTALLEDVERSION" == 2.4.111 ]] && up_to_2.4.120
     true
 }
 
@@ -517,6 +518,11 @@ post_to_2.4.100() {
 post_to_2.4.110() {
   echo "Nothing to apply"
   POSTVERSION=2.4.110
+}
+
+post_to_2.4.111() {
+  echo "Nothing to apply"
+  POSTVERSION=2.4.111
 }
 
 post_to_2.4.120() {
@@ -712,6 +718,12 @@ up_to_2.4.110() {
   echo "Nothing to do for 2.4.110"
 
   INSTALLEDVERSION=2.4.110
+}
+
+up_to_2.4.111() {
+  echo "Nothing to do for 2.4.111"
+
+  INSTALLEDVERSION=2.4.111
 }
 
 up_to_2.4.120() {
@@ -944,7 +956,7 @@ update_airgap_rules() {
   rsync -av $UPDATE_DIR/agrules/detect-sigma/* /nsm/rules/detect-sigma/
   rsync -av $UPDATE_DIR/agrules/detect-yara/* /nsm/rules/detect-yara/
   # Copy the securityonion-resorces repo over for SOC Detection Summaries and checkout the published summaries branch
-  rsync -av --chown=socore:socore $UPDATE_DIR/agrules/securityonion-resources /opt/so/conf/soc/ai_summary_repos
+  rsync -av --delete --chown=socore:socore $UPDATE_DIR/agrules/securityonion-resources /opt/so/conf/soc/ai_summary_repos
   git config --global --add safe.directory /opt/so/conf/soc/ai_summary_repos/securityonion-resources
   git -C /opt/so/conf/soc/ai_summary_repos/securityonion-resources checkout generated-summaries-published
   # Copy the securityonion-resorces repo over to nsm
