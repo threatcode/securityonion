@@ -339,6 +339,16 @@ soc:
         - file.os
         - file.subsystem
         - log.id.fuid
+      '::quic':
+        - soc_timestamp
+        - event.dataset
+        - source.ip
+        - source.port
+        - destination.ip
+        - destination.port
+        - quic.server_name
+        - log.id.uid
+        - network.community_id
       '::radius':
         - soc_timestamp
         - event.dataset
@@ -1732,6 +1742,10 @@ soc:
               description: PE files list
               query: 'tags:pe | groupby file.machine file.os file.subsystem'
               showSubtitle: true
+            - name: QUIC
+              description: QUIC connections
+              query: 'tags:quic | groupby quic.server_name | groupby source.ip quic.server_name destination.ip'
+              showSubtitle: true
             - name: RADIUS
               description: RADIUS grouped by username
               query: 'tags:radius | groupby user.name'
@@ -1952,7 +1966,7 @@ soc:
               query: 'tags:pe | groupby file.machine | groupby -sankey file.machine file.os | groupby file.os | groupby -sankey file.os file.subsystem | groupby file.subsystem | groupby file.section_names | groupby file.is_exe | groupby file.is_64bit'
             - name: QUIC
               description: QUIC network metadata
-              query: 'tags:quic | groupby quic.server_name | groupby source.ip | groupby destination.ip | groupby -sankey source.ip quic.server_name | groupby destination.port | groupby -sankey source.ip quic.client_initial_dcid quic.client_scid destination_geo.organization_name | groupby quic.server_scid | groupby quic.version | groupby quic.client_protocol'
+              query: 'tags:quic | groupby quic.server_name | groupby -sankey quic.server_name source.ip | groupby source.ip | groupby -sankey source.ip destination.ip | groupby destination.ip | groupby destination.port | groupby destination_geo.organization_name | groupby quic.server_scid | groupby quic.version | groupby quic.client_protocol'
             - name: RADIUS
               description: RADIUS (Remote Authentication Dial-In User Service) network metadata
               query: 'tags:radius | groupby user.name | groupby -sankey user.name source.ip | groupby source.ip | groupby -sankey source.ip destination.ip | groupby destination.ip | groupby destination.port | groupby destination_geo.organization_name'
