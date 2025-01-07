@@ -1502,6 +1502,10 @@ soc:
           integrityCheckFrequencySeconds: 1200
           ignoredSidRanges:
             - '1100000-1101000'
+        navigator:
+          intervalMinutes: 30
+          outputPath: /opt/sensoroni/navigator
+          lookbackDays: 3
       client:
         enableReverseLookup: false
         docsUrl: /docs/

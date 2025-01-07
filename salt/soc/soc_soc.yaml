@@ -419,6 +419,15 @@ soc:
             advanced: True
             forcedType: "[]string"
             helpLink: detections.html#rule-engine-status
+        navigator:
+          intervalMinutes:
+            description: How often to generate the Navigator Layers. (minutes)
+            global: True
+            helpLink: navigator.html
+          lookbackDays:
+            description: How far back to search for ATT&CK-tagged alerts. (days)
+            global: True
+            helpLink: navigator.html
       client:
         enableReverseLookup:
           description: Set to true to enable reverse DNS lookups for IP addresses in the SOC UI.
