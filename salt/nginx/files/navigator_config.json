@@ -17,11 +17,14 @@
         }
     ],
 
-    "custom_context_menu_items": [ {"label": "view related Detections","url": "  https://{{URL_BASE}}/#/detections?q=*{{ "{{technique_attackID}}" }}*+|+groupby+so_detection.language+|+groupby+so_detection.ruleset+so_detection.isEnabled+|+groupby+%22so_detection.category%22&z=America/New_York&el=500&gl=50&rt=0&rtu=hours"}],
+    "custom_context_menu_items": [ 
+        {"label": "View related Detections","url": "  https://{{URL_BASE}}/#/detections?q=*{{ "{{technique_attackID}}" }}*+|+groupby+so_detection.language+|+groupby+so_detection.ruleset+so_detection.isEnabled+|+groupby+%22so_detection.category%22&z=America/New_York&el=500&gl=50&rt=0&rtu=hours"},
+        {"label": "View related Alerts","url": "  https://{{URL_BASE}}/#/alerts?q=*{{ "{{technique_attackID}}" }}*+|+groupby+rule.name+event.module*+event.severity_label+rule.uuid&z=America/New_York&el=500&gl=500&rt=15&rtu=days"}
+        ],
 
     "default_layers": {
         "enabled": true,
-        "urls": ["assets/so/navigator_layer_sigma.json","assets/so/navigator_layer_suricata.json"]
+        "urls": ["assets/so/navigator_layer_all_detections.json","assets/so/navigator_layer_sigma.json","assets/so/navigator_layer_suricata.json","assets/so/navigator_layer_alerts.json"]
     },
 
     "comment_color": "yellow",
@@ -40,7 +43,7 @@
         {"name": "link_underline", "enabled": true, "description": "Disable to remove the hyperlink underline effect on techniques."}
     ],
     "features": [
-        {"name": "leave_site_dialog", "enabled": true, "description": "Disable to remove the dialog prompt when leaving site."},
+        {"name": "leave_site_dialog", "enabled": false, "description": "Disable to remove the dialog prompt when leaving site."},
         {"name": "tabs", "disabled": true, "description": "Disable to remove the ability to open new tabs."},
         {"name": "selecting_techniques", "enabled": true, "description": "Disable to remove the ability to select techniques."},
         {"name": "header", "enabled": true, "description": "Disable to remove the header containing banner."},
