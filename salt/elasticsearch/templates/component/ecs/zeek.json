@@ -1172,6 +1172,32 @@
                 }
               }
             },
+            "quic": {
+              "type": "object",
+              "properties": {
+                "server_name": {
+                  "type": "keyword"
+                },
+                "version": {
+                  "type": "short"
+                },
+                "client_initial_dcid": {
+                  "type": "keyword"
+                },
+                "client_scid": {
+                  "type": "keyword"
+                },
+                "server_scid": {
+                  "type": "keyword"
+                },
+                "client_protocol": {
+                  "type": "keyword"
+                },
+                "history": {
+                  "type": "keyword"
+                }
+              }
+            },
             "radius": {
               "properties": {
                 "connect_info": {
