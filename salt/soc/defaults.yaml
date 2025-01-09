@@ -284,6 +284,27 @@ soc:
         - kerberos.service
         - kerberos.request_type
         - log.id.uid
+      '::ldap':
+        - soc_timestamp
+        - event.dataset
+        - source.ip
+        - source.port
+        - destination.ip
+        - destination.port
+        - ldap.result
+        - ldap.common_name
+        - ldap.object
+        - ldap.opcode
+      '::ldap_search':
+        - soc_timestamp
+        - event.dataset
+        - source.ip
+        - source.port
+        - destination.ip
+        - destination.port
+        - ldap.result
+        - ldap.object
+        - ldap_search.filter
       '::modbus':
         - soc_timestamp
         - event.dataset
@@ -1722,6 +1743,13 @@ soc:
               description: KERBEROS grouped by service
               query: 'tags:kerberos | groupby kerberos.service'
               showSubtitle: true
+            - name: LDAP
+              description: LDAP grouped by source ip and result
+              query: 'tags:ldap | groupby source.ip ldap.result'
+            - name: LDAP_SEARCH
+              description: LDAP_SEARCH grouped by source.ip and filter
+              query: 'tags:ldap_search | groupby source.ip | groupby ldap_search.filter'
+              showSubtitle: true
             - name: MODBUS
               description: MODBUS grouped by function
               query: 'tags:modbus | groupby modbus.function'
@@ -1952,6 +1980,12 @@ soc:
             - name: Kerberos
               description: Kerberos network metadata
               query: 'tags:kerberos | groupby kerberos.service | groupby -sankey kerberos.service source.ip | groupby source.ip | groupby -sankey source.ip destination.ip | groupby destination.ip | groupby destination.port | groupby kerberos.client | groupby kerberos.request_type'
+            - name: LDAP
+              description: LDAP (Lightweight Directory Access Protocol) network metadata
+              query: 'tags:ldap | groupby source.ip | groupby destination.ip | groupby destination.port | groupby ldap.user_email | groupby ldap.property | groupby ldap.result | groupby ldap.common_name | groupby ldap.organizational_unit | groupby ldap.domain | groupby ldap.version | groupby ldap.object'
+            - name: LDAP_SEARCH
+              description: LDAP_SEARCH (Lightweight Directory Access Protocol) Search network metadata
+              query: 'tags:ldap_search | groupby source.ip | groupby destination.ip | groupby destination.port | groupby ldap_search.scope | groupby ldap.object | groupby ldap.domain | groupby ldap_search.filter'
             - name: MySQL
               description: MySQL network metadata
               query: 'tags:mysql | groupby mysql.command | groupby -sankey mysql.command source.ip | groupby source.ip | groupby -sankey source.ip destination.ip | groupby destination.ip | groupby destination.port | groupby mysql.argument | groupby mysql.success | groupby mysql.response | groupby mysql.rows'
