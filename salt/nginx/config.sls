@@ -49,24 +49,6 @@ navigatorconfig:
     - makedirs: True
     - template: jinja
 
-navigatorpreattack:
-  file.managed:
-    - name: /opt/so/conf/navigator/layers/pre-attack.json
-    - source: salt://nginx/files/pre-attack.json
-    - user: 939
-    - group: 939
-    - makedirs: True
-    - replace: False
-
-navigatorenterpriseattack:
-  file.managed:
-    - name: /opt/so/conf/navigator/layers/enterprise-attack.json
-    - source: salt://nginx/files/enterprise-attack.json
-    - user: 939
-    - group: 939
-    - makedirs: True
-    - replace: False
-
 nginx_sbin:
   file.recurse:
     - name: /usr/sbin
