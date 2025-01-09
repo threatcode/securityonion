@@ -1,21 +1,24 @@
 {%- set URL_BASE = salt['pillar.get']('global:url_base', '') %}
 
 {
-    "collection_index_url": "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/index.json",
+    "collection_index_url": "",
 
-    "versions": [
+"versions": {
+    "enabled": true,
+    "entries": [
         {
-            "name": "ATT&CK v16",
+            "name": "MITRE ATT&CK",
             "version": "16",
             "domains": [
-                {   
+                {
                     "name": "Enterprise",
                     "identifier": "enterprise-attack",
-                    "data": ["assets/so/enterprise-attack.json"]
+                    "data": ["assets/mitre/enterprise-attack.json"]
                 }
             ]
         }
-    ],
+    ]
+},
 
     "custom_context_menu_items": [ 
         {"label": "View related Detections","url": "  https://{{URL_BASE}}/#/detections?q=*{{ "{{technique_attackID}}" }}*+|+groupby+so_detection.language+|+groupby+so_detection.ruleset+so_detection.isEnabled+|+groupby+%22so_detection.category%22&z=America/New_York&el=500&gl=50&rt=0&rtu=hours"},
