@@ -49,6 +49,13 @@ navigatorconfig:
     - makedirs: True
     - template: jinja
 
+navigatorlayersdir:
+  file.directory:
+    - name: /opt/so/conf/navigator/layers/
+    - user: 939
+    - group: 939
+    - makedirs: True
+
 nginx_sbin:
   file.recurse:
     - name: /usr/sbin
