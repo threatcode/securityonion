@@ -1746,6 +1746,7 @@ soc:
             - name: LDAP
               description: LDAP grouped by source ip and result
               query: 'tags:ldap | groupby source.ip ldap.result'
+              showSubtitle: true
             - name: LDAP_SEARCH
               description: LDAP_SEARCH grouped by source.ip and filter
               query: 'tags:ldap_search | groupby source.ip | groupby ldap_search.filter'
