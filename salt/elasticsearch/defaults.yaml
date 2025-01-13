@@ -9107,6 +9107,7 @@ elasticsearch:
       index_sorting: false
       index_template:
         composed_of:
+        - okta-mappings
         - logs-okta.system@package
         - logs-okta.system@custom
         - so-fleet_globals-1
