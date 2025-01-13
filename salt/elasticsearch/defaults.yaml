@@ -11611,6 +11611,8 @@ elasticsearch:
         template:
           settings:
             index:
+              lifecycle:
+                name: so-logs-trend_micro_vision_one.alert-logs
               number_of_replicas: 0
         composed_of:
           - "logs-trend_micro_vision_one.alert@package"
@@ -11655,6 +11657,8 @@ elasticsearch:
         template:
           settings:
             index:
+              lifecycle:
+                name: so-logs-trend_micro_vision_one.audit-logs
               number_of_replicas: 0
         ignore_missing_component_templates:
         - "logs-trend_micro_vision_one.audit@custom"
@@ -11699,6 +11703,8 @@ elasticsearch:
         template:
           settings:
             index:
+              lifecycle:
+                name: so-logs-trend_micro_vision_one.detection-logs
               number_of_replicas: 0
         ignore_missing_component_templates:
         - "logs-trend_micro_vision_one.detection@custom"
@@ -11743,6 +11749,8 @@ elasticsearch:
         template:
           settings:
             index:
+              lifecycle:
+                name: so-logs-trend_micro_vision_one.deep_security-logs
               number_of_replicas: 0
         ignore_missing_component_templates:
         - "logs-trendmicro.deep_security@custom"
