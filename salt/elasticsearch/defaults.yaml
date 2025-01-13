@@ -4507,6 +4507,8 @@ elasticsearch:
         template:
           settings:
             index:
+              lifecycle:
+                name: so-logs-crowdstrike.alert-logs
               number_of_replicas: 0
         composed_of:
         - logs-crowdstrike.alert@package
@@ -4551,6 +4553,8 @@ elasticsearch:
         template:
           settings:
             index:
+              lifecycle:
+                name: so-logs-crowdstrike.falcon-logs
               number_of_replicas: 0
         composed_of:
         - logs-crowdstrike.falcon@package
@@ -4595,6 +4599,8 @@ elasticsearch:
         template:
           settings:
             index:
+              lifecycle:
+                name: so-logs-crowdstrike.fdr-logs
               number_of_replicas: 0
         composed_of:
         - logs-crowdstrike.fdr@package
@@ -4639,6 +4645,8 @@ elasticsearch:
         template:
           settings:
             index:
+              lifecycle:
+                name: so-logs-crowdstrike.host-logs
               number_of_replicas: 0
         composed_of:
         - logs-crowdstrike.host@package
