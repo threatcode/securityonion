@@ -53,6 +53,7 @@ elasticfleet:
     - citrix_adc
     - citrix_waf
     - cloudflare
+    - cloudflare_logpush
     - crowdstrike
     - darktrace
     - elastic_agent
