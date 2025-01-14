@@ -1717,23 +1717,23 @@ soc:
               showSubtitle: true
             - name: HTTP
               description: HTTP grouped by destination port
-              query: 'tags:http OR tags:http2 | groupby destination.port'
+              query: '(tags:http OR tags:http2) | groupby destination.port'
               showSubtitle: true
             - name: HTTP
               description: HTTP grouped by status code and message
-              query: 'tags:http OR tags:http2 | groupby http.status_code http.status_message'
+              query: '(tags:http OR tags:http2) | groupby http.status_code http.status_message'
               showSubtitle: true
             - name: HTTP
               description: HTTP grouped by method and user agent
-              query: 'tags:http OR tags:http2 | groupby http.method http.useragent'
+              query: '(tags:http OR tags:http2) | groupby http.method http.useragent'
               showSubtitle: true
             - name: HTTP
               description: HTTP grouped by virtual host
-              query: 'tags:http OR tags:http2 | groupby http.virtual_host'
+              query: '(tags:http OR tags:http2) | groupby http.virtual_host'
               showSubtitle: true
             - name: HTTP
               description: HTTP with exe downloads
-              query: 'tags:http OR tags:http2 AND file.resp_mime_types:*exec* | groupby http.virtual_host'
+              query: '(tags:http OR tags:http2) AND file.resp_mime_types:*exec* | groupby http.virtual_host'
               showSubtitle: true
             - name: Intel
               description: Intel framework hits grouped by indicator
@@ -1972,7 +1972,7 @@ soc:
               query: 'tags:ftp | groupby ftp.command | groupby -sankey ftp.command source.ip | groupby source.ip | groupby -sankey source.ip destination.ip | groupby destination.ip | groupby destination.port | groupby destination_geo.organization_name | groupby ftp.argument | groupby ftp.user'
             - name: HTTP
               description: HTTP (Hyper Text Transport Protocol) network metadata
-              query: 'tags:http OR tags:http2 | groupby http.method | groupby -sankey http.method http.virtual_host | groupby http.virtual_host | groupby http.uri | groupby http.useragent | groupby http.status_code | groupby http.status_message | groupby file.resp_mime_types | groupby source.ip | groupby destination.ip | groupby destination.port | groupby destination_geo.organization_name'
+              query: '(tags:http OR tags:http2) | groupby http.method | groupby -sankey http.method http.virtual_host | groupby http.virtual_host | groupby http.uri | groupby http.useragent | groupby http.status_code | groupby http.status_message | groupby file.resp_mime_types | groupby source.ip | groupby destination.ip | groupby destination.port | groupby destination_geo.organization_name'
             - name: Intel
               description: Zeek Intel framework hits
               query: 'tags:intel | groupby intel.indicator | groupby -sankey intel.indicator source.ip | groupby source.ip | groupby -sankey source.ip destination.ip | groupby destination.ip | groupby destination.port | groupby intel.indicator_type | groupby intel.seen_where'
