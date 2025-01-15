@@ -834,6 +834,81 @@
                 }
               }
             },
+            "ldap": {
+              "type": "object",
+              "properties": {
+                "message_id": {
+                  "type": "short"
+                },
+                "opcode": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "result": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "diagnostic_message": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "version": {
+                  "type": "short"
+                },
+                "object": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "argument": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "user_email": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "property": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "common_name": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "organizational_unit": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "domain": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                }
+              }
+            },
+            "ldap_search": {
+              "type": "object",
+              "properties": {
+                "scope": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "deref_aliases": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "result_count": {
+                  "type": "long"
+                },
+                "filter": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                },
+                "attributes": {
+                  "ignore_above": 1024,
+                  "type": "keyword"
+                }
+              }
+            },
             "modbus": {
               "properties": {
                 "exception": {
@@ -1176,24 +1251,30 @@
               "type": "object",
               "properties": {
                 "server_name": {
+                  "ignore_above": 1024,
                   "type": "keyword"
                 },
                 "version": {
                   "type": "short"
                 },
                 "client_initial_dcid": {
+                  "ignore_above": 1024,
                   "type": "keyword"
                 },
                 "client_scid": {
+                  "ignore_above": 1024,
                   "type": "keyword"
                 },
                 "server_scid": {
+                  "ignore_above": 1024,
                   "type": "keyword"
                 },
                 "client_protocol": {
+                  "ignore_above": 1024,
                   "type": "keyword"
                 },
                 "history": {
+                  "ignore_above": 1024,
                   "type": "keyword"
                 }
               }
