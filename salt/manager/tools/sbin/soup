@@ -527,6 +527,10 @@ post_to_2.4.111() {
 
 post_to_2.4.120() {
   update_elasticsearch_index_settings
+
+  # Manually rollover suricata alerts index to ensure data_stream.dataset expected mapping is set to 'suricata'
+  rollover_index "logs-suricata.alerts-so"
+
   POSTVERSION=2.4.120
 }
 
@@ -802,6 +806,19 @@ ASSIST_EOF
       fi
     fi
     echo ""
+  fi
+}
+
+rollover_index() {
+  idx=$1
+  exists=$(curl -K /opt/so/conf/elasticsearch/curl.config -s -o /dev/null -w "%{http_code}" -k -L -H "Content-Type: application/json" "https://localhost:9200/$idx")
+
+  rollover=$(curl -K /opt/so/conf/elasticsearch/curl.config -s -o /dev/null -w "%{http_code}" -k -L -H "Content-Type: application/json" "https://localhost:9200/$idx/_rollover" -XPOST)
+
+  if [[ $rollover -eq 200 ]]; then
+    echo "Successfully triggered rollover for $idx..."
+  else
+    echo "Could not trigger rollover for $idx..."
   fi
 }
 
