@@ -814,12 +814,16 @@ rollover_index() {
   idx=$1
   exists=$(curl -K /opt/so/conf/elasticsearch/curl.config -s -o /dev/null -w "%{http_code}" -k -L -H "Content-Type: application/json" "https://localhost:9200/$idx")
 
-  rollover=$(curl -K /opt/so/conf/elasticsearch/curl.config -s -o /dev/null -w "%{http_code}" -k -L -H "Content-Type: application/json" "https://localhost:9200/$idx/_rollover" -XPOST)
+  if [[ $exists -eq 200 ]]; then
+    rollover=$(curl -K /opt/so/conf/elasticsearch/curl.config -s -o /dev/null -w "%{http_code}" -k -L -H "Content-Type: application/json" "https://localhost:9200/$idx/_rollover" -XPOST)
 
-  if [[ $rollover -eq 200 ]]; then
-    echo "Successfully triggered rollover for $idx..."
+    if [[ $rollover -eq 200 ]]; then
+      echo "Successfully triggered rollover for $idx..."
+    else
+      echo "Could not trigger rollover for $idx..."
+    fi
   else
-    echo "Could not trigger rollover for $idx..."
+    echo "Could not find index $idx..."
   fi
 }
 
