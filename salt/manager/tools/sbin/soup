@@ -427,7 +427,8 @@ postupgrade_changes() {
     [[ "$POSTVERSION"  == 2.4.80 ]] && post_to_2.4.90
     [[ "$POSTVERSION"  == 2.4.90 ]] && post_to_2.4.100
     [[ "$POSTVERSION"  == 2.4.100 ]] && post_to_2.4.110
-    [[ "$POSTVERSION"  == 2.4.110 ]] && post_to_2.4.120
+    [[ "$POSTVERSION" == 2.4.110 ]] && post_to_2.4.111
+    [[ "$POSTVERSION"  == 2.4.111 ]] && post_to_2.4.120
     true
 }
 
