@@ -150,7 +150,7 @@ function createFile() {
 }
 
 function ensureRoleFileExists() {
-  if [[ ! -f "$socRolesFile" || ! -s "$socRolesFile" ]]; then
+  if [[ ! -f "$socRolesFile" ]]; then
     # Generate the new roles file
     rolesTmpFile="${socRolesFile}.tmp"
     createFile "$rolesTmpFile" "$soUID" "$soGID"
