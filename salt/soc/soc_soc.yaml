@@ -499,7 +499,7 @@ soc:
         alerts:
           <<: *appSettings
           maxBulkEscalateEvents:
-            description: Maximum number of events to escalate in a single bulk escalation.
+            description: Maximum number of events to escalate in a single bulk escalation. Large values may run into other limits.
             global: True
         cases: *appSettings
         dashboards: *appSettings
