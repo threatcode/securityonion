@@ -1,7 +1,7 @@
 strelka:
   backend:
     enabled: 
-      description: You can enable or disable Strelka backend.
+      description: Enables or disables the Strelka file analysis process.
       helpLink: strelka.html
     config:
       backend:
@@ -574,18 +574,6 @@ strelka:
   rules:
     enabled:
       description: Boolean that determines if yara rules sync from the Salt manager to the backend nodes.
-      readonly: False
-      global: False
-      helpLink: strelka.html
-      advanced: False
-    repos:
-      description: List of repos for so-yara-download to use to download rules.
-      readonly: False
-      global: False
-      helpLink: strelka.html
-      advanced: False
-    excluded:
-      description: List of rules to exclude so-yara-update from download and propagating to backend nodes.
       readonly: False
       global: False
       helpLink: strelka.html

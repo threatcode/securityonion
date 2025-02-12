@@ -447,6 +447,7 @@ if ! [[ -f $install_opt_file ]]; then
 		get_redirect
 		# Does the user want to allow access to the UI?
 		collect_so_allow
+		[[ ! $is_airgap ]] && whiptail_accept_telemetry
 		whiptail_end_settings
 	elif [[ $is_standalone ]]; then
 		waitforstate=true
@@ -468,6 +469,7 @@ if ! [[ -f $install_opt_file ]]; then
 		collect_webuser_inputs
 		get_redirect
 		collect_so_allow
+		[[ ! $is_airgap ]] && whiptail_accept_telemetry
 		whiptail_end_settings
 	elif [[ $is_manager ]]; then
 		info "Setting up as node type manager"
@@ -488,6 +490,7 @@ if ! [[ -f $install_opt_file ]]; then
 		collect_webuser_inputs
 		get_redirect
 		collect_so_allow
+		[[ ! $is_airgap ]] && whiptail_accept_telemetry
 		whiptail_end_settings
 	elif [[ $is_managersearch ]]; then
 		info "Setting up as node type managersearch"
@@ -508,6 +511,7 @@ if ! [[ -f $install_opt_file ]]; then
 		collect_webuser_inputs
 		get_redirect
 		collect_so_allow
+		[[ ! $is_airgap ]] && whiptail_accept_telemetry
 		whiptail_end_settings
 	elif [[ $is_sensor ]]; then
 		info "Setting up as node type sensor"
@@ -597,6 +601,7 @@ if ! [[ -f $install_opt_file ]]; then
 		collect_webuser_inputs
 		get_redirect
 		collect_so_allow
+		[[ ! $is_airgap ]] && whiptail_accept_telemetry
 		whiptail_end_settings
 
 	elif [[ $is_receiver ]]; then
@@ -661,7 +666,7 @@ if ! [[ -f $install_opt_file ]]; then
 		# Add the socore user
 		add_socore_user_manager
 		
-		create_local_directories
+		create_local_directories ${SCRIPTDIR::-5}
 		setup_salt_master_dirs
 		create_manager_pillars
 
@@ -755,16 +760,14 @@ if ! [[ -f $install_opt_file ]]; then
 		if [[ ! $is_airgap ]]; then
 			title "Downloading IDS Rules"
 			logCmd "so-rule-update"
-			title "Downloading YARA rules"
-			logCmd "su socore -c '/usr/sbin/so-yara-download'"
 			if [[ $monints || $is_import ]]; then
-				title "Restarting Suricata to pick up the new rules"
-				logCmd "so-suricata-restart"
+				title "Applying the Suricata state to load the new rules"
+				logCmd "salt-call state.apply suricata -l info"
 			fi
-			if [[ $monints ]]; then
-				title "Restarting Strelka to use new rules"
-				logCmd "so-strelka-restart"
-			fi
+		fi
+		if [[ $is_airgap ]]; then
+			title "Syncing AI-Generated Detection Summaries"
+			airgap_detection_summaries
 		fi
 		title "Setting up Kibana Default Space"
 		logCmd "so-kibana-space-defaults"
@@ -776,10 +779,6 @@ if ! [[ -f $install_opt_file ]]; then
 		if ! logCmd so-elastic-fleet-setup; then
 			error "Failed to run so-elastic-fleet-setup"
 			fail_setup
-		fi
-		if [[ ! $is_import ]]; then
-			title "Setting up Playbook"
-			logCmd "so-playbook-reset"
 		fi
 		checkin_at_boot
 		set_initial_firewall_access
@@ -809,7 +808,6 @@ if ! [[ -f $install_opt_file ]]; then
 		configure_minion "$minion_type"
 		check_sos_appliance
 		drop_install_options
-		logCmd "salt-call state.apply setup.highstate_cron --local --file-root=../salt/"
 		verify_setup
 	fi
 

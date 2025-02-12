@@ -1,6 +1,6 @@
 sensoroni:
   enabled:
-    description: Enable or disable Sensoroni.
+    description: Enable or disable the per-node SOC agent process. This process is used for performing node-related jobs and reporting node metrics back to SOC. Disabling this process is unsupported and will result in an improperly functioning grid.
     advanced: True
     helpLink: grid.html
   config:
@@ -37,6 +37,11 @@ sensoroni:
       helpLink: grid.html
       global: True
       advanced: True
+    suripcap:
+      pcapMaxCount:
+        description: The maximum number of PCAP packets to extract from eligible PCAP files, for PCAP jobs. If there are issues fetching excessively large packet streams consider lowering this value to reduce the number of collected packets returned to the user interface.
+        helpLink: sensoroni.html
+        advanced: True
   analyzers:
     echotrail:
       api_key:

@@ -7,6 +7,7 @@ firewall:
       multiline: True
       regex: ^(([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?)?$
       regexFailureMessage: You must enter a valid IP address or CIDR.
+      duplicates: True
     anywhere: &hostgroupsettingsadv
       description: List of IP or CIDR blocks to allow access to this hostgroup.
       forcedType: "[]string"
@@ -15,6 +16,7 @@ firewall:
       advanced: True
       regex: ^(([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?)?$
       regexFailureMessage: You must enter a valid IP address or CIDR.
+      duplicates: True
     beats_endpoint: *hostgroupsettings
     beats_endpoint_ssl: *hostgroupsettings
     dockernet: &ROhostgroupsettingsadv
@@ -30,6 +32,7 @@ firewall:
     elasticsearch_rest: *hostgroupsettingsadv
     endgame: *hostgroupsettingsadv
     eval: *hostgroupsettings
+    external_suricata: *hostgroupsettings
     fleet: *hostgroupsettings
     heavynode: *hostgroupsettings
     idh: *hostgroupsettings
@@ -53,6 +56,7 @@ firewall:
       multiline: True
       regex: ^(([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?)?$
       regexFailureMessage: You must enter a valid IP address or CIDR.
+      duplicates: True
     customhostgroup1: *customhostgroupsettings
     customhostgroup2: *customhostgroupsettings
     customhostgroup3: *customhostgroupsettings
@@ -70,12 +74,14 @@ firewall:
         helpLink: firewall.html
         advanced: True
         multiline: True
+        duplicates: True
       udp: &udpsettings
         description: List of UDP ports for this port group.
         forcedType: "[]string"
         helpLink: firewall.html
         advanced: True
         multiline: True
+        duplicates: True
     agrules:
       tcp: *tcpsettings
       udp: *udpsettings
@@ -112,7 +118,16 @@ firewall:
     endgame:
       tcp: *tcpsettings
       udp: *udpsettings
+    external_suricata:
+      tcp: *tcpsettings
+      udp: *udpsettings
     influxdb:
+      tcp: *tcpsettings
+      udp: *udpsettings
+    kafka_controller:
+      tcp: *tcpsettings
+      udp: *udpsettings
+    kafka_data:
       tcp: *tcpsettings
       udp: *udpsettings
     kibana:
@@ -121,13 +136,7 @@ firewall:
     localrules:
       tcp: *tcpsettings
       udp: *udpsettings
-    mysql:
-      tcp: *tcpsettings
-      udp: *udpsettings
     nginx:
-      tcp: *tcpsettings
-      udp: *udpsettings
-    playbook:
       tcp: *tcpsettings
       udp: *udpsettings
     redis:
@@ -193,6 +202,7 @@ firewall:
                 multiline: True
                 forcedType: "[]string"
                 helpLink: firewall.html
+                duplicates: True
             sensor:
               portgroups: *portgroupsdocker
             searchnode:
@@ -208,6 +218,8 @@ firewall:
             elasticsearch_rest:
               portgroups: *portgroupsdocker
             elastic_agent_endpoint:
+              portgroups: *portgroupsdocker
+            external_suricata: 
               portgroups: *portgroupsdocker
             strelka_frontend:
               portgroups: *portgroupsdocker
@@ -246,6 +258,7 @@ firewall:
                 multiline: True
                 forcedType: "[]string"
                 helpLink: firewall.html
+                duplicates: True
             dockernet: 
               portgroups: *portgroupshost
             localhost:
@@ -363,6 +376,8 @@ firewall:
               portgroups: *portgroupsdocker
             endgame:
               portgroups: *portgroupsdocker
+            external_suricata: 
+              portgroups: *portgroupsdocker
             analyst:
               portgroups: *portgroupsdocker
             desktop:
@@ -456,6 +471,8 @@ firewall:
               portgroups: *portgroupsdocker
             analyst:
               portgroups: *portgroupsdocker
+            external_suricata: 
+              portgroups: *portgroupsdocker
             desktop:
               portgroups: *portgroupsdocker
             customhostgroup0:
@@ -546,6 +563,8 @@ firewall:
             elastic_agent_endpoint:
               portgroups: *portgroupsdocker
             endgame:
+              portgroups: *portgroupsdocker
+            external_suricata: 
               portgroups: *portgroupsdocker
             strelka_frontend:
               portgroups: *portgroupsdocker
@@ -821,6 +840,8 @@ firewall:
               portgroups: *portgroupsdocker
             analyst:
               portgroups: *portgroupsdocker
+            external_suricata: 
+              portgroups: *portgroupsdocker
             desktop:
               portgroups: *portgroupsdocker
             customhostgroup0:
@@ -938,7 +959,6 @@ firewall:
               portgroups: *portgroupshost
             customhostgroup9: 
               portgroups: *portgroupshost
-
     idh:
       chain:
         DOCKER-USER:

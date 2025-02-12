@@ -1,5 +1,5 @@
 # Copyright Security Onion Solutions LLC and/or licensed to Security Onion Solutions LLC under one
-# or more contributor license agreements. Licensed under the Elastic License 2.0 as shown at 
+# or more contributor license agreements. Licensed under the Elastic License 2.0 as shown at
 # https://securityonion.net/license; you may not use this file except in compliance with the
 # Elastic License 2.0.
 
@@ -12,6 +12,7 @@ base:
   '*':
     - cron.running
     - repo.client
+    - versionlock
     - ntp
     - schedule
     - logrotate
@@ -46,6 +47,7 @@ base:
     - zeek
     - strelka
     - elasticfleet.install_agent_grid
+    - stig
 
   '*_eval and G@saltversion:{{saltversion}}':
     - match: compound
@@ -60,13 +62,13 @@ base:
     - influxdb
     - soc
     - kratos
+    - hydra
     - sensoroni
     - telegraf
     - firewall
     - idstools
     - suricata.manager
     - healthcheck
-    - mysql
     - elasticsearch
     - elastic-fleet-package-registry
     - kibana
@@ -77,8 +79,6 @@ base:
     - curator.disabled
     - elastalert
     - utility
-    - soctopus
-    - playbook
     - elasticfleet
 
   '*_manager and G@saltversion:{{saltversion}}':
@@ -89,8 +89,10 @@ base:
     - registry
     - nginx
     - influxdb
+    - strelka.manager
     - soc
     - kratos
+    - hydra
     - firewall
     - manager
     - sensoroni
@@ -98,7 +100,6 @@ base:
     - backup.config_backup
     - idstools
     - suricata.manager
-    - mysql
     - elasticsearch
     - logstash
     - redis
@@ -107,9 +108,9 @@ base:
     - curator.disabled
     - elastalert
     - utility
-    - soctopus
-    - playbook
     - elasticfleet
+    - stig
+    - kafka
 
   '*_standalone and G@saltversion:{{saltversion}}':
     - match: compound
@@ -124,13 +125,13 @@ base:
     - influxdb
     - soc
     - kratos
+    - hydra
     - firewall
     - sensoroni
     - telegraf
     - idstools
-    - suricata.manager    
+    - suricata.manager
     - healthcheck
-    - mysql
     - elasticsearch
     - logstash
     - redis
@@ -143,20 +144,22 @@ base:
     - curator.disabled
     - elastalert
     - utility
-    - soctopus
-    - playbook
     - elasticfleet
+    - stig
+    - kafka
 
   '*_searchnode and G@saltversion:{{saltversion}}':
     - match: compound
+    - firewall
     - ssl
+    - elasticsearch
+    - logstash
     - sensoroni
     - telegraf
     - nginx
-    - firewall
-    - elasticsearch
-    - logstash
     - elasticfleet.install_agent_grid
+    - stig
+    - kafka
 
   '*_managersearch and G@saltversion:{{saltversion}}':
     - match: compound
@@ -166,8 +169,10 @@ base:
     - registry
     - nginx
     - influxdb
+    - strelka.manager
     - soc
     - kratos
+    - hydra
     - firewall
     - manager
     - sensoroni
@@ -175,7 +180,6 @@ base:
     - backup.config_backup
     - idstools
     - suricata.manager
-    - mysql
     - elasticsearch
     - logstash
     - redis
@@ -184,9 +188,9 @@ base:
     - kibana
     - elastalert
     - utility
-    - soctopus
-    - playbook
     - elasticfleet
+    - stig
+    - kafka
 
   '*_heavynode and G@saltversion:{{saltversion}}':
     - match: compound
@@ -206,7 +210,7 @@ base:
     - zeek
     - elasticfleet.install_agent_grid
     - elasticagent
-  
+
   '*_import and G@saltversion:{{saltversion}}':
     - match: compound
     - salt.master
@@ -217,8 +221,10 @@ base:
     - manager
     - nginx
     - influxdb
+    - strelka.manager
     - soc
     - kratos
+    - hydra
     - sensoroni
     - telegraf
     - firewall
@@ -242,6 +248,8 @@ base:
     - logstash
     - redis
     - elasticfleet.install_agent_grid
+    - kafka
+    - stig
 
   '*_idh and G@saltversion:{{saltversion}}':
     - match: compound
@@ -259,6 +267,7 @@ base:
     - telegraf
     - firewall
     - logstash
+    - nginx
     - elasticfleet
     - elasticfleet.install_agent_grid
     - schedule
@@ -268,6 +277,7 @@ base:
     - sensoroni
     - telegraf
     - elasticfleet.install_agent_grid
+    - stig
 
   'J@desktop:gui:enabled:^[Tt][Rr][Uu][Ee]$ and ( G@saltversion:{{saltversion}} and G@os:OEL )':
     - match: compound

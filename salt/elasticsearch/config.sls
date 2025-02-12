@@ -118,6 +118,24 @@ esingestconf:
     - user: 930
     - group: 939
 
+# Remove .fleet_final_pipeline-1 because we are using global@custom now
+so-fleet-final-pipeline-remove:
+  file.absent:
+    - name: /opt/so/conf/elasticsearch/ingest/.fleet_final_pipeline-1
+
+# Auto-generate Elasticsearch ingest node pipelines from pillar
+{% for pipeline, config in ELASTICSEARCHMERGED.pipelines.items() %}
+es_ingest_conf_{{pipeline}}:
+  file.managed:
+    - name: /opt/so/conf/elasticsearch/ingest/{{ pipeline }}
+    - source: salt://elasticsearch/base-template.json.jinja
+    - defaults:
+      TEMPLATE_CONFIG: {{ config }}
+    - template: jinja
+    - onchanges_in:
+      - file: so-pipelines-reload
+{%     endfor %}
+
 eslog4jfile:
   file.managed:
     - name: /opt/so/conf/elasticsearch/log4j2.properties

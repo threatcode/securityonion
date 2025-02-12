@@ -2,29 +2,40 @@
 {% from 'salt/map.jinja' import UPGRADECOMMAND with context %}
 {% from 'salt/map.jinja' import SALTVERSION %}
 {% from 'salt/map.jinja' import INSTALLEDSALTVERSION %}
-{% from 'salt/map.jinja' import SALTNOTHELD %}
 {% from 'salt/map.jinja' import SALTPACKAGES %}
 {% from 'salt/map.jinja' import SYSTEMD_UNIT_FILE %}
 {% import_yaml 'salt/minion.defaults.yaml' as SALTMINION %}
 {% set service_start_delay = SALTMINION.salt.minion.service_start_delay %}
 
 include:
+  - salt.python_modules
   - salt
   - systemd.reload
   - repo.client
   - salt.mine_functions
+{% if GLOBALS.role in GLOBALS.manager_roles %}
+  - ca
+{% endif %}
 
 {% if INSTALLEDSALTVERSION|string != SALTVERSION|string %}
 
-{% if SALTNOTHELD | int == 0 %}
+{# this is added in 2.4.120 to remove salt repo files pointing to saltproject.io to accomodate the move to broadcom and new bootstrap-salt script #}
+{%   if salt['pkg.version_cmp'](GLOBALS.so_version, '2.4.120') == -1 %}
+{%     set saltrepofile = '/etc/yum.repos.d/salt.repo' %}
+{%     if grains.os_family == 'Debian' %}
+{%       set saltrepofile = '/etc/apt/sources.list.d/salt.list' %}
+{%     endif %}
+remove_saltproject_io_repo_minion:
+  file.absent:
+    - name: {{ saltrepofile }}
+{%   endif %}
+
 unhold_salt_packages:
-  module.run:
-    - pkg.unhold:
-      - pkgs:
+  pkg.unheld:
+    - pkgs:
 {% for package in SALTPACKAGES %}
-        - {{ package }}
+      - {{ package }}
 {% endfor %}
-{% endif %}
 
 install_salt_minion:
   cmd.run:
@@ -38,15 +49,12 @@ install_salt_minion:
 
 {% if INSTALLEDSALTVERSION|string == SALTVERSION|string %}
 
-{% if SALTNOTHELD | int == 1 %}
 hold_salt_packages:
-  module.run:
-    - pkg.hold:
-      - pkgs:
+  pkg.held:
+    - pkgs:
 {% for package in SALTPACKAGES %}
-        - {{ package }}
+      - {{ package }}: {{SALTVERSION}}-0.*
 {% endfor %}
-{% endif %}
 
 remove_error_log_level_logfile:
   file.line:
@@ -98,5 +106,8 @@ salt_minion_service:
       - file: mine_functions
 {% if INSTALLEDSALTVERSION|string == SALTVERSION|string %}
       - file: set_log_levels
+{% endif %}
+{% if GLOBALS.role in GLOBALS.manager_roles %}
+      - file: /etc/salt/minion.d/signing_policies.conf
 {% endif %}
     - order: last

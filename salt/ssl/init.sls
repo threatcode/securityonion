@@ -661,8 +661,55 @@ elastickeyperms:
     - name: /etc/pki/elasticsearch.key
     - mode: 640
     - group: 930
-
 {%- endif %}
+
+{% if grains['role'] in ['so-manager', 'so-managersearch', 'so-standalone'] %}
+elasticfleet_kafka_key:
+  x509.private_key_managed:
+    - name: /etc/pki/elasticfleet-kafka.key
+    - keysize: 4096
+    - backup: True
+    - new: True
+    {% if salt['file.file_exists']('/etc/pki/elasticfleet-kafka.key') -%}
+    - prereq:
+      - x509: elasticfleet_kafka_crt
+    {%- endif %}
+    - retry:
+        attempts: 5
+        interval: 30
+
+elasticfleet_kafka_crt:
+  x509.certificate_managed:
+    - name: /etc/pki/elasticfleet-kafka.crt
+    - ca_server: {{ ca_server }}
+    - signing_policy: kafka
+    - private_key: /etc/pki/elasticfleet-kafka.key
+    - CN: {{ GLOBALS.hostname }}
+    - subjectAltName: DNS:{{ GLOBALS.hostname }}, IP:{{ GLOBALS.node_ip }}
+    - days_remaining: 0
+    - days_valid: 820
+    - backup: True
+    - timeout: 30
+    - retry:
+        attempts: 5
+        interval: 30
+
+elasticfleet_kafka_cert_perms:
+  file.managed:
+    - replace: False
+    - name: /etc/pki/elasticfleet-kafka.crt
+    - mode: 640
+    - user: 947
+    - group: 939
+
+elasticfleet_kafka_key_perms:
+  file.managed:
+    - replace: False
+    - name: /etc/pki/elasticfleet-kafka.key
+    - mode: 640
+    - user: 947
+    - group: 939
+{% endif %}
 
 {% else %}
 

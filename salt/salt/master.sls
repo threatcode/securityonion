@@ -1,16 +1,13 @@
-{% from 'salt/map.jinja' import SALTNOTHELD %}
 {% from 'allowed_states.map.jinja' import allowed_states %}
 {% if sls in allowed_states %}
 
 include:
   - salt.minion
 
-{% if SALTNOTHELD == 1 %}
 hold_salt_master_package:
   module.run:
     - pkg.hold:
       - name: salt-master
-{% endif %}
 
 # prior to 2.4.30 this engine ran on the manager with salt-minion
 # this has changed to running with the salt-master in 2.4.30
@@ -27,6 +24,11 @@ checkmine_engine:
     - source: salt://salt/engines/master/checkmine.py
     - makedirs: True
 
+pillarWatch_engine:
+  file.managed:
+    - name: /etc/salt/engines/pillarWatch.py
+    - source: salt://salt/engines/master/pillarWatch.py
+
 engines_config:
   file.managed:
     - name: /etc/salt/master.d/engines.conf
@@ -38,6 +40,7 @@ salt_master_service:
     - enable: True
     - watch:
       - file: checkmine_engine
+      - file: pillarWatch_engine
       - file: engines_config
     - order: last
 

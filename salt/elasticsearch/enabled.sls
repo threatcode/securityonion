@@ -7,8 +7,8 @@
 {% if sls.split('.')[0] in allowed_states %}
 {%   from 'vars/globals.map.jinja' import GLOBALS %}
 {%   from 'docker/docker.map.jinja' import DOCKER %}
-{%   from 'logstash/map.jinja' import LOGSTASH_NODES %}
-{%   from 'elasticsearch/config.map.jinja' import ES_LOGSTASH_NODES %}
+{%   from 'elasticsearch/config.map.jinja' import ELASTICSEARCH_NODES %}
+{%   from 'elasticsearch/config.map.jinja' import ELASTICSEARCH_SEED_HOSTS %}
 {%   from 'elasticsearch/config.map.jinja' import ELASTICSEARCHMERGED %}
 {%   set TEMPLATES = salt['pillar.get']('elasticsearch:templates', {}) %}
 {%   from 'elasticsearch/template.map.jinja' import ES_INDEX_SETTINGS %}
@@ -19,7 +19,7 @@ include:
 
 so-elasticsearch:
   docker_container.running:
-    - image: {{ GLOBALS.registry_host }}:5000/{{ GLOBALS.image_repo }}/so-elasticsearch:{{ GLOBALS.so_version }}
+    - image: {{ GLOBALS.registry_host }}:5000/{{ GLOBALS.image_repo }}/so-elasticsearch:{{ ELASTICSEARCHMERGED.version }}
     - hostname: elasticsearch
     - name: so-elasticsearch
     - user: elasticsearch
@@ -27,7 +27,7 @@ so-elasticsearch:
       - sobridge:
         - ipv4_address: {{ DOCKER.containers['so-elasticsearch'].ip }}
     - extra_hosts:
-    {% for node in LOGSTASH_NODES %}
+    {% for node in ELASTICSEARCH_NODES %}
     {%   for hostname, ip in node.items() %}
       - {{hostname}}:{{ip}}
     {%   endfor %}
@@ -38,7 +38,7 @@ so-elasticsearch:
       {% endfor %}
     {% endif %}
     - environment:
-      {% if ES_LOGSTASH_NODES | length == 1 or GLOBALS.role == 'so-heavynode' %}
+      {% if (GLOBALS.role in GLOBALS.manager_roles and ELASTICSEARCH_SEED_HOSTS | length == 1) or GLOBALS.role == 'so-heavynode' %}
       - discovery.type=single-node
       {% endif %}
       - ES_JAVA_OPTS=-Xms{{ GLOBALS.elasticsearch.es_heap }} -Xmx{{ GLOBALS.elasticsearch.es_heap }} -Des.transport.cname_in_publish_address=true -Dlog4j2.formatMsgNoLookups=true
@@ -200,9 +200,15 @@ so-elasticsearch-roles-load:
     - require:
       - docker_container: so-elasticsearch
       - file: elasticsearch_sbin_jinja
-{% if grains.role in ['so-eval', 'so-standalone', 'so-managersearch', 'so-heavynode', 'so-manager'] %}
+
+{%     if grains.role in ['so-eval', 'so-standalone', 'so-managersearch', 'so-heavynode', 'so-manager'] %}
+{%       if ELASTICSEARCHMERGED.index_clean %}
+{%         set ap = "present" %}
+{%       else %}
+{%         set ap = "absent" %}
+{%       endif %}
 so-elasticsearch-indices-delete:
-  cron.present:
+  cron.{{ap}}:
     - name: /usr/sbin/so-elasticsearch-indices-delete > /opt/so/log/elasticsearch/cron-elasticsearch-indices-delete.log 2>&1
     - identifier: so-elasticsearch-indices-delete
     - user: root
@@ -211,7 +217,8 @@ so-elasticsearch-indices-delete:
     - daymonth: '*'
     - month: '*'
     - dayweek: '*'
-{% endif %}
+{%     endif %}
+
 {%   endif %}
 
 {% else %}

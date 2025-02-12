@@ -1,9 +1,19 @@
 elasticsearch:
   enabled:
-    description: You can enable or disable Elasticsearch.
+    description: Enables or disables the Elasticsearch process. This process provides the log event storage system. WARNING - Disabling this process is unsupported.
+    advanced: True
     helpLink: elasticsearch.html
+  version:
+    description: "This specifies the version of the following containers: so-elastic-fleet-package-registry, so-elastic-agent, so-elastic-fleet, so-kibana, so-logstash and so-elasticsearch. Modifying this value in the Elasticsearch defaults.yaml will result in catastrophic grid failure."
+    readonly: True
+    global: True
+    advanced: True
   esheap:
     description: Specify the memory heap size in (m)egabytes for Elasticsearch.
+    helpLink: elasticsearch.html
+  index_clean:
+    description: Determines if indices should be considered for deletion by available disk space in the cluster. Otherwise, indices will only be deleted by the age defined in the ILM settings.
+    forcedType: bool
     helpLink: elasticsearch.html
   retention: 
     retention_pct:
@@ -45,6 +55,28 @@ elasticsearch:
             description: Max number of boolean clauses per query.
             global: True
             helpLink: elasticsearch.html
+  pipelines:
+    custom001: &pipelines
+      description:
+        description: Description of the ingest node pipeline
+        global: True
+        advanced: True
+        helpLink: elasticsearch.html
+      processors:
+        description: Processors for the ingest node pipeline
+        global: True
+        advanced: True
+        multiline: True
+        helpLink: elasticsearch.html
+    custom002: *pipelines
+    custom003: *pipelines
+    custom004: *pipelines
+    custom005: *pipelines
+    custom006: *pipelines
+    custom007: *pipelines
+    custom008: *pipelines
+    custom009: *pipelines
+    custom010: *pipelines
   index_settings:
     global_overrides:
       index_template:
@@ -73,12 +105,9 @@ elasticsearch:
                   description: The order to sort by. Must set index_sorting to True.
                   global: True
                   helpLink: elasticsearch.html
+      policy:
         phases:
           hot:
-            max_age:
-              description: Maximum age of index. ex. 7d - This determines when the index should be moved out of the hot tier.
-              global: True
-              helpLink: elasticsearch.html
             actions:
               set_priority:
                 priority:
@@ -97,7 +126,9 @@ elasticsearch:
                   helpLink: elasticsearch.html
           cold:
             min_age:
-              description: Minimum age of index. ex. 30d - This determines when the index should be moved to the cold tier.  While still searchable, this tier is typically optimized for lower storage costs rather than search speed.
+              description: Minimum age of index. ex. 60d - This determines when the index should be moved to the cold tier.  While still searchable, this tier is typically optimized for lower storage costs rather than search speed.
+              regex: ^[0-9]{1,5}d$
+              forcedType: string
               global: True
               helpLink: elasticsearch.html
             actions:
@@ -108,8 +139,8 @@ elasticsearch:
                   helpLink: elasticsearch.html
           warm:
             min_age: 
-              description: Minimum age of index. ex. 30d - This determines when the index should be moved to the cold tier.  While still searchable, this tier is typically optimized for lower storage costs rather than search speed.
-              regex: ^\[0-9\]{1,5}d$
+              description: Minimum age of index. ex. 30d - This determines when the index should be moved to the warm tier. Nodes in the warm tier generally don’t need to be as fast as those in the hot tier.
+              regex: ^[0-9]{1,5}d$
               forcedType: string
               global: True
             actions:
@@ -122,6 +153,8 @@ elasticsearch:
           delete:
             min_age:
               description: Minimum age of index. ex. 90d - This determines when the index should be deleted.
+              regex: ^[0-9]{1,5}d$
+              forcedType: string
               global: True
               helpLink: elasticsearch.html
     so-logs: &indexSettings
@@ -248,7 +281,9 @@ elasticsearch:
                   helpLink: elasticsearch.html
           warm:
             min_age:
-              description: Minimum age of index. This determines when the index should be moved to the hot tier.
+              description: Minimum age of index. ex. 30d - This determines when the index should be moved to the warm tier. Nodes in the warm tier generally don’t need to be as fast as those in the hot tier.
+              regex: ^[0-9]{1,5}d$
+              forcedType: string
               global: True
               advanced: True
               helpLink: elasticsearch.html
@@ -273,7 +308,9 @@ elasticsearch:
                   helpLink: elasticsearch.html
           cold:
             min_age:
-              description: Minimum age of index.  This determines when the index should be moved to the cold tier.  While still searchable, this tier is typically optimized for lower storage costs rather than search speed.
+              description: Minimum age of index. ex. 60d - This determines when the index should be moved to the cold tier.  While still searchable, this tier is typically optimized for lower storage costs rather than search speed.
+              regex: ^[0-9]{1,5}d$
+              forcedType: string
               global: True
               advanced: True
               helpLink: elasticsearch.html
@@ -288,6 +325,8 @@ elasticsearch:
           delete:
             min_age:
               description: Minimum age of index. This determines when the index should be deleted.
+              regex: ^[0-9]{1,5}d$
+              forcedType: string
               global: True
               advanced: True
               helpLink: elasticsearch.html
@@ -318,6 +357,7 @@ elasticsearch:
     so-logs-windows_x_powershell: *indexSettings
     so-logs-windows_x_powershell_operational: *indexSettings
     so-logs-windows_x_sysmon_operational: *indexSettings
+    so-logs-winlog_x_winlog: *indexSettings
     so-logs-apache_x_access: *indexSettings
     so-logs-apache_x_error: *indexSettings
     so-logs-auditd_x_log: *indexSettings
@@ -342,17 +382,28 @@ elasticsearch:
     so-logs-azure_x_signinlogs: *indexSettings
     so-logs-azure_x_springcloudlogs: *indexSettings
     so-logs-barracuda_x_waf: *indexSettings
+    so-logs-barracuda_cloudgen_firewall_x_log: *indexSettings
+    so-logs-cef_x_log: *indexSettings
     so-logs-cisco_asa_x_log: *indexSettings
     so-logs-cisco_ftd_x_log: *indexSettings
     so-logs-cisco_ios_x_log: *indexSettings
     so-logs-cisco_ise_x_log: *indexSettings
+    so-logs-citrix_adc_x_interface: *indexSettings
+    so-logs-citrix_adc_x_lbvserver: *indexSettings
+    so-logs-citrix_adc_x_service: *indexSettings
+    so-logs-citrix_adc_x_system: *indexSettings
+    so-logs-citrix_adc_x_vpn: *indexSettings
+    so-logs-citrix_waf_x_log: *indexSettings
     so-logs-cloudflare_x_audit: *indexSettings
     so-logs-cloudflare_x_logpull: *indexSettings
+    so-logs-crowdstrike_x_alert: *indexSettings
     so-logs-crowdstrike_x_falcon: *indexSettings
     so-logs-crowdstrike_x_fdr: *indexSettings
+    so-logs-crowdstrike_x_host: *indexSettings
     so-logs-darktrace_x_ai_analyst_alert: *indexSettings
     so-logs-darktrace_x_model_breach_alert: *indexSettings
     so-logs-darktrace_x_system_status_alert: *indexSettings
+    so-logs-detections_x_alerts: *indexSettings
     so-logs-f5_bigip_x_log: *indexSettings
     so-logs-fim_x_event: *indexSettings
     so-logs-fortinet_x_clientendpoint: *indexSettings
@@ -388,6 +439,7 @@ elasticsearch:
     so-logs-httpjson_x_generic: *indexSettings
     so-logs-iis_x_access: *indexSettings
     so-logs-iis_x_error: *indexSettings
+    so-logs-imperva_cloud_waf_x_event: *indexSettings
     so-logs-juniper_x_junos: *indexSettings
     so-logs-juniper_x_netscreen: *indexSettings
     so-logs-juniper_x_srx: *indexSettings
@@ -406,6 +458,8 @@ elasticsearch:
     so-logs-mysql_x_error: *indexSettings
     so-logs-mysql_x_slowlog: *indexSettings
     so-logs-netflow_x_log: *indexSettings
+    so-logs-nginx_x_access: *indexSettings
+    so-logs-nginx_x_error: *indexSettings
     so-logs-o365_x_audit: *indexSettings
     so-logs-okta_x_system: *indexSettings
     so-logs-panw_x_panos: *indexSettings
@@ -422,6 +476,13 @@ elasticsearch:
     so-logs-sonicwall_firewall_x_log: *indexSettings
     so-logs-snort_x_log: *indexSettings
     so-logs-symantec_endpoint_x_log: *indexSettings
+    so-logs-tenable_io_x_asset: *indexSettings
+    so-logs-tenable_io_x_plugin: *indexSettings
+    so-logs-tenable_io_x_scan: *indexSettings
+    so-logs-tenable_io_x_vulnerability: *indexSettings
+    so-logs-tenable_sc_x_asset: *indexSettings
+    so-logs-tenable_sc_x_plugin: *indexSettings
+    so-logs-tenable_sc_x_vulnerability: *indexSettings
     so-logs-ti_abusech_x_malware: *indexSettings
     so-logs-ti_abusech_x_malwarebazaar: *indexSettings
     so-logs-ti_abusech_x_threatfox: *indexSettings
@@ -430,11 +491,16 @@ elasticsearch:
     so-logs-ti_cybersixgill_x_threat: *indexSettings
     so-logs-ti_misp_x_threat: *indexSettings
     so-logs-ti_misp_x_threat_attributes: *indexSettings
+    so-logs-ti_opencti_x_indicator: *indexSettings
     so-logs-ti_otx_x_pulses_subscribed: *indexSettings  
     so-logs-ti_otx_x_threat: *indexSettings
     so-logs-ti_recordedfuture_x_latest_ioc-template: *indexSettings
     so-logs-ti_recordedfuture_x_threat: *indexSettings
     so-logs-ti_threatq_x_threat: *indexSettings
+    so-logs-trend_micro_vision_one_x_alert: *indexSettings
+    so-logs-trend_micro_vision_one_x_audit: *indexSettings
+    so-logs-trend_micro_vision_one_x_detection: *indexSettings
+    so-logs-trendmicro_x_deep_security: *indexSettings
     so-logs-zscaler_zia_x_alerts: *indexSettings
     so-logs-zscaler_zia_x_dns: *indexSettings
     so-logs-zscaler_zia_x_firewall: *indexSettings
@@ -471,18 +537,74 @@ elasticsearch:
     so-metrics-endpoint_x_metadata: *indexSettings
     so-metrics-endpoint_x_metrics: *indexSettings
     so-metrics-endpoint_x_policy: *indexSettings
+    so-metrics-nginx_x_stubstatus: *indexSettings
     so-case: *indexSettings
     so-common: *indexSettings
     so-endgame: *indexSettings
     so-idh: *indexSettings
     so-suricata: *indexSettings
+    so-suricata_x_alerts: *indexSettings
     so-import: *indexSettings
     so-kratos: *indexSettings
+    so-hydra: *indexSettings
+    so-kismet: *indexSettings
     so-logstash: *indexSettings
     so-redis: *indexSettings
     so-strelka: *indexSettings
     so-syslog: *indexSettings
     so-zeek: *indexSettings
+    so-metrics-fleet_server_x_agent_status: &fleetMetricsSettings
+      index_sorting:
+        description: Sorts the index by event time, at the cost of additional processing resource consumption.
+        advanced: True
+        readonly: True
+        helpLink: elasticsearch.html
+      index_template:
+        ignore_missing_component_templates:
+          description: Ignore component templates if they aren't in Elasticsearch.
+          advanced: True
+          readonly: True
+          helpLink: elasticsearch.html
+        index_patterns:
+          description: Patterns for matching multiple indices or tables.
+          advanced: True
+          readonly: True
+          helpLink: elasticsearch.html
+        template:
+          settings:
+            index:
+              mode:
+                description: Type of mode used for this index. Time series indices can be used for metrics to reduce necessary storage.
+                advanced: True
+                readonly: True
+                helpLink: elasticsearch.html
+              number_of_replicas:
+                description: Number of replicas required for this index. Multiple replicas protects against data loss, but also increases storage costs.
+                advanced: True
+                readonly: True
+                helpLink: elasticsearch.html
+        composed_of:
+          description: The index template is composed of these component templates.
+          advanced: True
+          readonly: True
+          helpLink: elasticsearch.html
+        priority:
+          description: The priority of the index template.
+          advanced: True
+          readonly: True
+          helpLink: elasticsearch.html
+        data_stream:
+          hidden:
+            description: Hide the data stream.
+            advanced: True
+            readonly: True
+            helpLink: elasticsearch.html
+          allow_custom_routing:
+            description: Allow custom routing for the data stream.
+            advanced: True
+            readonly: True
+            helpLink: elasticsearch.html
+    so-metrics-fleet_server_x_agent_versions: *fleetMetricsSettings
   so_roles:
     so-manager: &soroleSettings
       config:

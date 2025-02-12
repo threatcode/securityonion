@@ -24,6 +24,7 @@
           'influxdb',
           'soc',
           'kratos',
+          'hydra',
           'elasticfleet',
           'elastic-fleet-package-registry',
           'firewall',
@@ -34,7 +35,6 @@
           'suricata',
           'utility',
           'schedule',
-          'soctopus',
           'tcpreplay',
           'docker_clean'
           ],
@@ -66,8 +66,10 @@
           'registry',
           'manager',
           'nginx',
+          'strelka.manager',
           'soc',
           'kratos',
+          'hydra',
           'influxdb',
           'telegraf',
           'firewall',
@@ -92,8 +94,10 @@
           'nginx',
           'telegraf',
           'influxdb',
+          'strelka.manager',
           'soc',
           'kratos',
+          'hydra',
           'elasticfleet',
           'elastic-fleet-package-registry',
           'firewall',
@@ -101,8 +105,9 @@
           'suricata.manager',
           'utility',
           'schedule',
-          'soctopus',
-          'docker_clean'
+          'docker_clean',
+          'stig',
+          'kafka'
           ],
       'so-managersearch': [
           'salt.master',
@@ -112,8 +117,10 @@
           'nginx',
           'telegraf',
           'influxdb',
+          'strelka.manager',
           'soc',
           'kratos',
+          'hydra',
           'elastic-fleet-package-registry',
           'elasticfleet',
           'firewall',
@@ -122,8 +129,9 @@
           'suricata.manager',
           'utility',
           'schedule',
-          'soctopus',
-          'docker_clean'
+          'docker_clean',
+          'stig',
+          'kafka'
           ],
       'so-searchnode': [
           'ssl',
@@ -131,7 +139,10 @@
           'telegraf',
           'firewall',
           'schedule',
-          'docker_clean'
+          'docker_clean',
+          'stig',
+          'kafka.ca',
+          'kafka.ssl'
           ],
       'so-standalone': [
           'salt.master',
@@ -144,6 +155,7 @@
           'influxdb',
           'soc',
           'kratos',
+          'hydra',
           'elastic-fleet-package-registry',
           'elasticfleet',
           'firewall',
@@ -154,9 +166,10 @@
           'healthcheck',
           'utility',
           'schedule',
-          'soctopus',
           'tcpreplay',
-          'docker_clean'
+          'docker_clean',
+          'stig',
+          'kafka'
           ],
       'so-sensor': [
           'ssl',
@@ -168,13 +181,15 @@
           'healthcheck',
           'schedule',
           'tcpreplay',
-          'docker_clean'
+          'docker_clean',
+          'stig'
           ],
       'so-fleet': [
           'ssl',
           'telegraf',
           'firewall',
           'logstash',
+          'nginx',
           'healthcheck',
           'schedule',
           'elasticfleet',
@@ -185,18 +200,17 @@
           'telegraf',
           'firewall',
           'schedule',
-          'docker_clean'
+          'docker_clean',
+          'kafka',
+          'stig'
           ],
       'so-desktop': [
           'ssl',
           'docker_clean',
-          'telegraf'
+          'telegraf',
+          'stig'
           ],
   }, grain='role') %}
-
-  {% if grains.role in ['so-eval', 'so-manager', 'so-managersearch', 'so-standalone'] %}
-    {% do allowed_states.append('mysql') %}
-  {% endif %}
 
   {%- if grains.role in ['so-sensor', 'so-eval', 'so-standalone', 'so-heavynode'] %}
     {% do allowed_states.append('zeek') %}
@@ -221,10 +235,6 @@
 
   {% if grains.role in ['so-eval', 'so-manager', 'so-standalone', 'so-managersearch'] %}
     {% do allowed_states.append('elastalert') %}
-  {% endif %}
-
-  {% if grains.role in ['so-eval', 'so-manager', 'so-standalone', 'so-managersearch'] %}
-    {% do allowed_states.append('playbook') %}
   {% endif %}
 
   {% if grains.role in ['so-manager', 'so-standalone', 'so-searchnode', 'so-managersearch', 'so-heavynode', 'so-receiver'] %}
