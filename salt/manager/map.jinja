@@ -5,3 +5,7 @@
 
 {% import_yaml 'manager/defaults.yaml' as MANAGERDEFAULTS %}
 {% set MANAGERMERGED = salt['pillar.get']('manager', MANAGERDEFAULTS.manager, merge=True) %}
+
+{% if grains.os != 'OEL' %}
+{%   do MANAGERMERGED.reposync.update({'enabled': False}) %}
+{% endif %}

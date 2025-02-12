@@ -176,6 +176,15 @@ socusersroles:
     - require:
       - sls: manager.sync_es_users
 
+socclientsroles:
+  file.managed:
+    - name: /opt/so/conf/soc/soc_clients_roles
+    - user: 939
+    - group: 939
+    - mode: 600
+    - allow_empty: true
+    - create: true
+
 socuploaddir:
   file.directory:
     - name: /nsm/soc/uploads
@@ -198,6 +207,49 @@ socsensoronirepos:
     - mode: 775
     - makedirs: True
 
+
+create_custom_local_yara_repo_template:
+  git.present:
+    - name: /nsm/rules/custom-local-repos/local-yara
+    - bare: False
+    - force: True
+
+add_readme_custom_local_yara_repo_template:
+  file.managed:
+    - name: /nsm/rules/custom-local-repos/local-yara/README
+    - source: salt://soc/files/soc/detections_custom_repo_template_readme.jinja
+    - user: 939
+    - group: 939
+    - template: jinja
+    - context:
+        repo_type: "yara"
+
+
+create_custom_local_sigma_repo_template:
+  git.present:
+    - name: /nsm/rules/custom-local-repos/local-sigma
+    - bare: False
+    - force: True
+
+add_readme_custom_local_sigma_repo_template:
+  file.managed:
+    - name: /nsm/rules/custom-local-repos/local-sigma/README
+    - source: salt://soc/files/soc/detections_custom_repo_template_readme.jinja
+    - user: 939
+    - group: 939
+    - template: jinja
+    - context:
+        repo_type: "sigma"
+
+socore_own_custom_repos:
+  file.directory:
+    - name: /nsm/rules/custom-local-repos/
+    - user: socore
+    - group: socore
+    - recurse:
+      - user
+      - group
+  
 {% else %}
 
 {{sls}}_state_not_allowed:

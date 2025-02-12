@@ -396,8 +396,10 @@ elasticsearch:
     so-logs-citrix_waf_x_log: *indexSettings
     so-logs-cloudflare_x_audit: *indexSettings
     so-logs-cloudflare_x_logpull: *indexSettings
+    so-logs-crowdstrike_x_alert: *indexSettings
     so-logs-crowdstrike_x_falcon: *indexSettings
     so-logs-crowdstrike_x_fdr: *indexSettings
+    so-logs-crowdstrike_x_host: *indexSettings
     so-logs-darktrace_x_ai_analyst_alert: *indexSettings
     so-logs-darktrace_x_model_breach_alert: *indexSettings
     so-logs-darktrace_x_system_status_alert: *indexSettings
@@ -489,11 +491,16 @@ elasticsearch:
     so-logs-ti_cybersixgill_x_threat: *indexSettings
     so-logs-ti_misp_x_threat: *indexSettings
     so-logs-ti_misp_x_threat_attributes: *indexSettings
+    so-logs-ti_opencti_x_indicator: *indexSettings
     so-logs-ti_otx_x_pulses_subscribed: *indexSettings  
     so-logs-ti_otx_x_threat: *indexSettings
     so-logs-ti_recordedfuture_x_latest_ioc-template: *indexSettings
     so-logs-ti_recordedfuture_x_threat: *indexSettings
     so-logs-ti_threatq_x_threat: *indexSettings
+    so-logs-trend_micro_vision_one_x_alert: *indexSettings
+    so-logs-trend_micro_vision_one_x_audit: *indexSettings
+    so-logs-trend_micro_vision_one_x_detection: *indexSettings
+    so-logs-trendmicro_x_deep_security: *indexSettings
     so-logs-zscaler_zia_x_alerts: *indexSettings
     so-logs-zscaler_zia_x_dns: *indexSettings
     so-logs-zscaler_zia_x_firewall: *indexSettings
@@ -539,6 +546,7 @@ elasticsearch:
     so-suricata_x_alerts: *indexSettings
     so-import: *indexSettings
     so-kratos: *indexSettings
+    so-hydra: *indexSettings
     so-kismet: *indexSettings
     so-logstash: *indexSettings
     so-redis: *indexSettings

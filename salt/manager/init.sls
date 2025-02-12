@@ -6,10 +6,7 @@
 {% from 'allowed_states.map.jinja' import allowed_states %}
 {% if sls in allowed_states %}
 {%   from 'vars/globals.map.jinja' import GLOBALS %}
-{%   from 'strelka/map.jinja' import STRELKAMERGED %}
-{%   import_yaml 'manager/defaults.yaml' as MANAGERDEFAULTS %}
-{%   set MANAGERMERGED = salt['pillar.get']('manager', MANAGERDEFAULTS.manager, merge=true) %}
-{%   from 'strelka/map.jinja' import STRELKAMERGED %}
+{%   from 'manager/map.jinja' import MANAGERMERGED %}
 
 include:
   - salt.minion
@@ -44,6 +41,12 @@ yara_log_dir:
     - recurse:
       - user
       - group
+
+{% if GLOBALS.os_family == 'RedHat' %}
+install_createrepo:
+  pkg.installed:
+    - name: createrepo_c
+{% endif %}
 
 repo_conf_dir:
   file.directory:
@@ -135,6 +138,16 @@ rules_dir:
     - group: socore
     - makedirs: True
 
+git_config_set_safe_dirs:
+  git.config_set:
+    - name: safe.directory
+    - global: True
+    - user: socore
+    - multivar:
+      - /nsm/rules/custom-local-repos/local-sigma
+      - /nsm/rules/custom-local-repos/local-yara
+      - /nsm/securityonion-resources
+      - /opt/so/conf/soc/ai_summary_repos/securityonion-resources
 {% else %}
 
 {{sls}}_state_not_allowed:

@@ -19,6 +19,8 @@ SOUP_LOG=/root/soup.log
 WHATWOULDYOUSAYYAHDOHERE=soup
 whiptail_title='Security Onion UPdater'
 NOTIFYCUSTOMELASTICCONFIG=false
+TOPFILE=/opt/so/saltstack/default/salt/top.sls
+BACKUPTOPFILE=/opt/so/saltstack/default/salt/top.sls.backup
 # used to display messages to the user at the end of soup
 declare -a FINAL_MESSAGE_QUEUE=()
 
@@ -32,10 +34,7 @@ check_err() {
   if [[ $exit_code -ne 0 ]]; then
 
     set +e
-    systemctl_func "start" "$cron_service_name"
-    systemctl_func "start" "salt-master"
-    systemctl_func "start" "salt-minion"
-    enable_highstate
+    failed_soup_restore_items
 
     printf '%s' "Soup failed with error $exit_code: "
     case $exit_code in
@@ -347,8 +346,6 @@ highstate() {
 
 masterlock() {
   echo "Locking Salt Master"
-  TOPFILE=/opt/so/saltstack/default/salt/top.sls
-  BACKUPTOPFILE=/opt/so/saltstack/default/salt/top.sls.backup
   mv -v $TOPFILE $BACKUPTOPFILE
   echo "base:" > $TOPFILE
   echo "  $MINIONID:" >> $TOPFILE
@@ -358,8 +355,12 @@ masterlock() {
 }
 
 masterunlock() {
-  echo "Unlocking Salt Master"
-  mv -v $BACKUPTOPFILE $TOPFILE
+  if [ -f $BACKUPTOPFILE ]; then
+    echo "Unlocking Salt Master"
+    mv -v $BACKUPTOPFILE $TOPFILE
+  else
+    echo "Salt Master does not need unlocked."
+  fi
 }
 
 phases_pillar_2_4_80() {
@@ -403,6 +404,8 @@ preupgrade_changes() {
     [[ "$INSTALLEDVERSION" == 2.4.80 ]] && up_to_2.4.90
     [[ "$INSTALLEDVERSION" == 2.4.90 ]] && up_to_2.4.100
     [[ "$INSTALLEDVERSION" == 2.4.100 ]] && up_to_2.4.110
+    [[ "$INSTALLEDVERSION" == 2.4.110 ]] && up_to_2.4.111
+    [[ "$INSTALLEDVERSION" == 2.4.111 ]] && up_to_2.4.120
     true
 }
 
@@ -424,6 +427,8 @@ postupgrade_changes() {
     [[ "$POSTVERSION"  == 2.4.80 ]] && post_to_2.4.90
     [[ "$POSTVERSION"  == 2.4.90 ]] && post_to_2.4.100
     [[ "$POSTVERSION"  == 2.4.100 ]] && post_to_2.4.110
+    [[ "$POSTVERSION" == 2.4.110 ]] && post_to_2.4.111
+    [[ "$POSTVERSION"  == 2.4.111 ]] && post_to_2.4.120
     true
 }
 
@@ -506,14 +511,30 @@ post_to_2.4.90() {
 }
 
 post_to_2.4.100() {
-  echo "Regenerating Elastic Agent Installers"
-  /sbin/so-elastic-agent-gen-installers
+  echo "Nothing to apply"
   POSTVERSION=2.4.100
 }
 
 post_to_2.4.110() {
   echo "Nothing to apply"
   POSTVERSION=2.4.110
+}
+
+post_to_2.4.111() {
+  echo "Nothing to apply"
+  POSTVERSION=2.4.111
+}
+
+post_to_2.4.120() {
+  update_elasticsearch_index_settings
+
+  # Manually rollover suricata alerts index to ensure data_stream.dataset expected mapping is set to 'suricata'
+  rollover_index "logs-suricata.alerts-so"
+
+  echo "Regenerating Elastic Agent Installers"
+  /sbin/so-elastic-agent-gen-installers
+
+  POSTVERSION=2.4.120
 }
 
 repo_sync() {
@@ -693,15 +714,56 @@ up_to_2.4.90() {
 
   INSTALLEDVERSION=2.4.90
 }
+
 up_to_2.4.100() {
   # Elastic Update for this release, so download Elastic Agent files
   determine_elastic_agent_upgrade
   INSTALLEDVERSION=2.4.100
 }
+
 up_to_2.4.110() {
   echo "Nothing to do for 2.4.110"
 
   INSTALLEDVERSION=2.4.110
+}
+
+up_to_2.4.111() {
+  echo "Nothing to do for 2.4.111"
+
+  INSTALLEDVERSION=2.4.111
+}
+
+up_to_2.4.120() {
+  add_hydra_pillars
+
+  # this is needed for the new versionlock state
+  mkdir -p /opt/so/saltstack/local/pillar/versionlock
+  touch /opt/so/saltstack/local/pillar/versionlock/adv_versionlock.sls /opt/so/saltstack/local/pillar/versionlock/soc_versionlock.sls
+
+  # New Grid Integration added this release
+  rm -f /opt/so/state/eaintegrations.txt
+
+  INSTALLEDVERSION=2.4.120
+}
+
+add_hydra_pillars() {
+  mkdir -p /opt/so/saltstack/local/pillar/hydra
+  touch /opt/so/saltstack/local/pillar/hydra/soc_hydra.sls
+  chmod 660 /opt/so/saltstack/local/pillar/hydra/soc_hydra.sls
+  touch /opt/so/saltstack/local/pillar/hydra/adv_hydra.sls
+  HYDRAKEY=$(get_random_value)
+  HYDRASALT=$(get_random_value)
+	printf '%s\n'\
+		"hydra:"\
+		"  config:"\
+		"    secrets:"\
+		"      system:"\
+		"        - '$HYDRAKEY'"\
+    "    oidc:"\
+    "        subject_identifiers:"\
+    "            pairwise:"\
+    "                salt: '$HYDRASALT'"\
+		"" > /opt/so/saltstack/local/pillar/hydra/soc_hydra.sls
 }
 
 add_detection_test_pillars() {
@@ -747,6 +809,22 @@ ASSIST_EOF
       fi
     fi
     echo ""
+  fi
+}
+
+rollover_index() {
+  idx=$1
+  exists=$(so-elasticsearch-query $idx -o /dev/null -w "%{http_code}")
+  if [[ $exists -eq 200 ]]; then
+    rollover=$(so-elasticsearch-query $idx/_rollover -o /dev/null -w "%{http_code}" -XPOST)
+
+    if [[ $rollover -eq 200 ]]; then
+      echo "Successfully triggered rollover for $idx..."
+    else
+      echo "Could not trigger rollover for $idx..."
+    fi
+  else
+    echo "Could not find index $idx..."
   fi
 }
 
@@ -913,8 +991,32 @@ update_airgap_repo() {
   echo "Syncing new updates to /nsm/repo"
   rsync -av $AGREPO/* /nsm/repo/
   echo "Creating repo"
-  dnf -y install yum-utils createrepo
+  dnf -y install yum-utils createrepo_c
   createrepo /nsm/repo
+}
+
+update_elasticsearch_index_settings() {
+  # Update managed indices to reflect latest index template
+  for idx in "so-detection" "so-detectionhistory" "so-case" "so-casehistory"; do
+    ilm_name=$idx
+    if [ "$idx" = "so-detectionhistory" ]; then
+      ilm_name="so-detection"
+    elif [ "$idx" = "so-casehistory" ]; then
+      ilm_name="so-case"
+    fi
+    JSON_STRING=$( jq -n --arg ILM_NAME "$ilm_name" '{"settings": {"index.auto_expand_replicas":"0-2","index.lifecycle.name":($ILM_NAME + "-logs")}}')
+
+    echo "Checking if index \"$idx\" exists"
+    exists=$(curl -K /opt/so/conf/elasticsearch/curl.config -s -o /dev/null -w "%{http_code}" -k -L -H "Content-Type: application/json" "https://localhost:9200/$idx")
+    if [ $exists -eq 200 ]; then
+      echo "$idx index found..."
+      echo "Updating $idx index settings"
+      curl -K /opt/so/conf/elasticsearch/curl.config -s -k -L -H "Content-Type: application/json" "https://localhost:9200/$idx/_settings" -d "$JSON_STRING" -XPUT
+      echo -e "\n"
+    else
+      echo -e "Skipping $idx... index does not exist\n"
+    fi
+  done
 }
 
 update_salt_mine() {
@@ -982,12 +1084,12 @@ upgrade_salt() {
     # if oracle run with -r to ignore repos set by bootstrap
     if [[ $OS == 'oracle' ]]; then
       run_check_net_err \
-      "sh $UPDATE_DIR/salt/salt/scripts/bootstrap-salt.sh -X -r -F -M -x python3 stable \"$NEWSALTVERSION\"" \
+      "sh $UPDATE_DIR/salt/salt/scripts/bootstrap-salt.sh -X -r -F -M stable \"$NEWSALTVERSION\"" \
       "Could not update salt, please check $SOUP_LOG for details."
     # if another rhel family variant we want to run without -r to allow the bootstrap script to manage repos
     else
       run_check_net_err \
-      "sh $UPDATE_DIR/salt/salt/scripts/bootstrap-salt.sh -X -F -M -x python3 stable \"$NEWSALTVERSION\"" \
+      "sh $UPDATE_DIR/salt/salt/scripts/bootstrap-salt.sh -X -F -M stable \"$NEWSALTVERSION\"" \
       "Could not update salt, please check $SOUP_LOG for details."
     fi
     set -e
@@ -1007,7 +1109,7 @@ upgrade_salt() {
     echo ""
     set +e
     run_check_net_err \
-    "sh $UPDATE_DIR/salt/salt/scripts/bootstrap-salt.sh -X -F -M -x python3 stable \"$NEWSALTVERSION\"" \
+    "sh $UPDATE_DIR/salt/salt/scripts/bootstrap-salt.sh -X -F -M stable \"$NEWSALTVERSION\"" \
     "Could not update salt, please check $SOUP_LOG for details."
     set -e
     echo "Applying apt hold for Salt."
@@ -1091,6 +1193,16 @@ apply_hotfix() {
   fi
 }
 
+failed_soup_restore_items() {
+  local services=("$cron_service_name" "salt-master" "salt-minion")
+  for SERVICE_NAME in "${services[@]}"; do
+    if ! systemctl is-active --quiet "$SERVICE_NAME"; then
+      systemctl_func "start" "$SERVICE_NAME"
+    fi
+  done
+  enable_highstate
+  masterunlock
+}
 
 #upgrade salt to 3004.1
 #2_3_10_hotfix_1() {
@@ -1129,6 +1241,8 @@ main() {
   echo "Checking to see if this is a manager."
   echo ""
   require_manager
+
+  failed_soup_restore_items
 
   check_pillar_items
 
@@ -1301,6 +1415,10 @@ main() {
 
     echo "Running a highstate to complete the Security Onion upgrade on this manager. This could take several minutes."
     (wait_for_salt_minion "$MINIONID" "5" '/dev/stdout' || fail "Salt minion was not running or ready.") 2>&1 | tee -a "$SOUP_LOG"
+
+    # Stop long-running scripts to allow potentially updated scripts to load on the next execution.
+    killall salt-relay.sh
+
     highstate
     postupgrade_changes
     [[ $is_airgap -eq 0 ]] && unmount_update
